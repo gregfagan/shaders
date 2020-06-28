@@ -1,4 +1,8 @@
-export const quad = {
+import type REGL from 'regl';
+
+console.log('hello,world');
+
+export const quad: REGL.DrawConfig = {
   primitive: 'triangle strip',
   count: 4,
   attributes: {
@@ -16,7 +20,7 @@ export const quad = {
       }
     `,
   uniforms: {
-    viewport: ({ viewportWidth, viewportHeight }) => [
+    viewport: ({ viewportWidth, viewportHeight }: REGL.DefaultContext) => [
       viewportWidth,
       viewportHeight,
     ],

@@ -1,11 +1,37 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="regl.js"></script>
-    <script src="dat.gui.min.js"></script>
-    <!-- <script src="mobx.min.js"></script> -->
+    <script type="systemjs-importmap">
+      {
+        "imports": {
+          "regl": "./node_modules/regl/dist/regl.js",
+          "mobx": "./node_modules/mobx/lib/mobx.umd.js",
+          "dat.gui": "./node_modules/dat.gui/build/dat.gui.js"
+        }
+      }
+    </script>
+    <script src="node_modules/systemjs/dist/system.js"></script>
+    <!-- <script src="node_modules/systemjs/dist/extras/named-register.js"></script> -->
+    <script src="node_modules/systemjs/dist/extras/amd.js"></script>
+    <script src="node_modules/systemjs/dist/extras/named-exports.js"></script>
+    <script>
+      // Automatically resolve bare specifiers with `.js` extension
+      (function () {
+        const endsWithFileExtension = /\/?\.[a-zA-Z]{2,}$/;
+        const originalResolve = System.constructor.prototype.resolve;
+        System.constructor.prototype.resolve = function () {
+          // apply original resolve to make sure importmaps are resolved first
+          const url = originalResolve.apply(this, arguments);
+          // append .js file extension if url is missing a file extension
+          return endsWithFileExtension.test(url) ? url : url + '.js';
+        };
+      })();
+    </script>
+    <!-- <script type="systemjs-module" src="dist/bundle.js"></script> -->
+    <script type="systemjs-module" src="dist/ripple.js"></script>
+    <!-- <script>
+      System.import('./dist/ripple.js');
+    </script> -->
   </head>
-  <body>
-    <script type="module" src="ripple.js"></script>
-  </body>
+  <body></body>
 </html>
