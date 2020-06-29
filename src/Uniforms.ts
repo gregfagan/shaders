@@ -1,3 +1,4 @@
+// "@types/dat.gui": "^0.7.5",
 import { observable, computed } from 'mobx';
 import { GUI } from 'dat.gui';
 import { Vec3, Vec2 } from 'regl';
@@ -12,7 +13,6 @@ function fromGLColor([r, g, b]: Vec3) {
 }
 
 function toGLColor(guiColor: string): Vec3 {
-  console.log(guiColor);
   const test = guiColor.match(/^#([A-F0-9]{2})([A-F0-9]{2})([A-F0-9]{2})$/i);
   if (test === null) {
     throw new Error('cannot read color');
@@ -28,7 +28,7 @@ export type GLUniform =
   | { type: 'float'; value: number }
   | { type: 'vec2'; value: Vec2 }
   | { type: 'vec3'; value: Vec3 }
-  | { type: 'color'; value: Vec3 };
+  | { type: 'color'; value: boolean };
 
 type UniformStore = Record<string, GLUniform>;
 export type GLUniforms = Record<string, GLUniform['value']>;

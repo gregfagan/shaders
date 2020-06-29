@@ -4,34 +4,19 @@
     <script type="systemjs-importmap">
       {
         "imports": {
-          "regl": "./node_modules/regl/dist/regl.js",
-          "mobx": "./node_modules/mobx/lib/mobx.umd.js",
-          "dat.gui": "./node_modules/dat.gui/build/dat.gui.js"
+          "regl": "https://unpkg.com/regl@^1.6.1/dist/regl.js",
+          "mobx": "https://unpkg.com/mobx@^5.15.4/lib/mobx.umd.js",
+          "dat.gui": "https://unpkg.com/dat.gui@^0.7.7/build/dat.gui.js"
         }
       }
     </script>
-    <script src="node_modules/systemjs/dist/system.js"></script>
-    <!-- <script src="node_modules/systemjs/dist/extras/named-register.js"></script> -->
-    <script src="node_modules/systemjs/dist/extras/amd.js"></script>
-    <script src="node_modules/systemjs/dist/extras/named-exports.js"></script>
-    <script>
-      // Automatically resolve bare specifiers with `.js` extension
-      (function () {
-        const endsWithFileExtension = /\/?\.[a-zA-Z]{2,}$/;
-        const originalResolve = System.constructor.prototype.resolve;
-        System.constructor.prototype.resolve = function () {
-          // apply original resolve to make sure importmaps are resolved first
-          const url = originalResolve.apply(this, arguments);
-          // append .js file extension if url is missing a file extension
-          return endsWithFileExtension.test(url) ? url : url + '.js';
-        };
-      })();
-    </script>
-    <!-- <script type="systemjs-module" src="dist/bundle.js"></script> -->
-    <script type="systemjs-module" src="dist/ripple.js"></script>
-    <!-- <script>
-      System.import('./dist/ripple.js');
-    </script> -->
+    <script src="https://unpkg.com/systemjs@^6.3.3/dist/system.js"></script>
+    <script src="https://unpkg.com/systemjs@^6.3.3/dist/extras/amd.js"></script>
+    <script src="https://unpkg.com/systemjs@^6.3.3/dist/extras/named-exports.js"></script>
+    <script src="https://unpkg.com/systemjs@^6.3.3/dist/extras/transform.js"></script>
+    <script src="https://unpkg.com/typescript@^3.9.5/lib/typescript.js"></script>
+    <script src="src/systemjs-typescript.js"></script>
+    <script type="systemjs-module" src="src/ripple.ts"></script>
   </head>
   <body></body>
 </html>
