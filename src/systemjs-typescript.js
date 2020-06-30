@@ -12,10 +12,8 @@
         if (/^.*\.ts/.exec(url) == null) return source;
 
         const config = await fetch('./tsconfig.json').then((r) => r.json());
-        console.log('tsconfig', config);
         return new Promise((resolve, reject) => {
           const output = ts.transpileModule(source, config);
-          // console.log(output);
           resolve(output.outputText);
         });
       },

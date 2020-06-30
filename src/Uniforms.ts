@@ -1,4 +1,3 @@
-// "@types/dat.gui": "^0.7.5",
 import { observable, computed } from 'mobx';
 import { GUI } from 'dat.gui';
 import { Vec3, Vec2 } from 'regl';
@@ -28,12 +27,11 @@ export type GLUniform =
   | { type: 'float'; value: number }
   | { type: 'vec2'; value: Vec2 }
   | { type: 'vec3'; value: Vec3 }
-  | { type: 'color'; value: boolean };
+  | { type: 'color'; value: Vec3 };
 
 type UniformStore = Record<string, GLUniform>;
 export type GLUniforms = Record<string, GLUniform['value']>;
 
-// uniforms utility
 export class Uniforms {
   gui = new GUI();
   unnamed = 1;

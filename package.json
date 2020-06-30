@@ -1,0 +1,22 @@
+{
+  "name": "shaders",
+  "version": "1.0.0",
+  "description": "building my graphics tools",
+  "main": "none",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "es-dev-server --node-resolve --watch"
+  },
+  "author": "Greg Fagan",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/dat.gui": "^0.7.5",
+    "mobx": "^5.15.4",
+    "regl": "^1.6.1"
+  },
+  "imports": {
+    "regl": "https://unpkg.com/regl@^1.6.1/dist/regl.js",
+    "mobx": "https://unpkg.com/mobx@^5.15.4/lib/mobx.umd.js",
+    "dat.gui": "https://unpkg.com/dat.gui@^0.7.7/build/dat.gui.js"
+  }
+}

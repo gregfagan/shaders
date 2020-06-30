@@ -1,7 +1,15 @@
 {
-  "glsl-canvas.useCompactFormatter": false,
-  "glsl-canvas.uniforms": {
-    "u_energy": 0,
-    "u_color": [0.9, 0.2, 0.1]
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "node_modules": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true
   }
 }

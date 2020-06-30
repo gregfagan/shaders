@@ -1,22 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <script type="systemjs-importmap">
-      {
-        "imports": {
-          "regl": "https://unpkg.com/regl@^1.6.1/dist/regl.js",
-          "mobx": "https://unpkg.com/mobx@^5.15.4/lib/mobx.umd.js",
-          "dat.gui": "https://unpkg.com/dat.gui@^0.7.7/build/dat.gui.js"
-        }
-      }
-    </script>
+    <script type="systemjs-importmap" src="package.json"></script>
     <script src="https://unpkg.com/systemjs@^6.3.3/dist/system.js"></script>
     <script src="https://unpkg.com/systemjs@^6.3.3/dist/extras/amd.js"></script>
     <script src="https://unpkg.com/systemjs@^6.3.3/dist/extras/named-exports.js"></script>
     <script src="https://unpkg.com/systemjs@^6.3.3/dist/extras/transform.js"></script>
     <script src="https://unpkg.com/typescript@^3.9.5/lib/typescript.js"></script>
     <script src="src/systemjs-typescript.js"></script>
-    <script type="systemjs-module" src="src/ripple.ts"></script>
   </head>
-  <body></body>
+  <body>
+    <script type="systemjs-module" src="src/index.ts"></script>
+  </body>
 </html>
