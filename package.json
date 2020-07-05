@@ -10,13 +10,15 @@
   "author": "Greg Fagan",
   "license": "UNLICENSED",
   "devDependencies": {
-    "@types/dat.gui": "^0.7.5",
-    "mobx": "^5.15.4",
-    "regl": "^1.6.1"
+    "@types/dat.gui": "0.7.5",
+    "mobx": "5.15.4",
+    "mobx-utils": "5.6.1",
+    "regl": "1.6.1"
   },
   "imports": {
     "regl": "https://unpkg.com/regl@1.6.1/dist/regl.js",
     "mobx": "https://unpkg.com/mobx@5.15.4/lib/mobx.umd.js",
+    "mobx-utils": "https://unpkg.com/mobx-utils@5.6.1/mobx-utils.umd.js",
     "dat.gui": "https://unpkg.com/dat.gui@0.7.7/build/dat.gui.js"
   }
 }

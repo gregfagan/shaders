@@ -1,4 +1,13 @@
-import { observable, computed, autorun } from 'mobx';
+import {
+  observable,
+  computed,
+  IReactionDisposer,
+  reaction,
+  configure,
+  toJS,
+  action,
+} from 'mobx';
+import { deepObserve } from 'mobx-utils';
 import { GUI } from 'dat.gui';
 import REGL, { Vec3, Vec2 } from 'regl';
 import {
@@ -8,10 +17,6 @@ import {
   toGLColor,
 } from './utils';
 import { quad } from './quad';
-
-type ColorUniform =
-  | { type: 'color'; value: Vec3 }
-  | { type: 'color'; value: string };
 
 export type GLUniform =
   | { type: 'float'; value: number }
@@ -26,24 +31,95 @@ type GuiConfig<U extends GLUniform> = U & {
 };
 
 type ScriptConfig<U extends GLUniform> = U & {
-  script?: (value: U) => void;
+  script?: (
+    value: U,
+    onFrame: (callback: FrameRequestCallback) => void,
+  ) => void;
 };
 
 type UniformStore = Record<string, GLUniform>;
 export type GLUniforms = Record<string, GLUniform['value']>;
 
+configure({
+  computedRequiresReaction: true,
+});
+
 export class Shader {
+  // GUI
   gui = new GUI();
+  @observable ui: Record<string, any> = {};
+
+  // Uniforms
   unnamed = 1;
   @observable values: UniformStore = {};
   guiValues = guiUniformProxy(this.values);
   glValues = glUniformProxy(this.values);
 
-  constructor(public regl: REGL.Regl = REGL()) {}
+  // Renderer
+  @observable.ref private draw: REGL.DrawCommand | null = null;
+  @observable private frameId = 0;
+  @observable private updateRequested = false;
+
+  constructor(public regl: REGL.Regl = REGL()) {
+    this.saveGuiValues();
+    this.setupRender();
+
+    const update = action((elapsed: number) => {
+      // Reset update state before calling callbacks which might
+      // request future updates.
+      this.updateRequested = false;
+      for (const onFrame of this.frameCallbacks) {
+        onFrame(elapsed);
+      }
+      this.frameId++;
+    });
+
+    const requestUpdate = () => {
+      if (this.updateRequested) return;
+      requestAnimationFrame(update);
+      this.updateRequested = true;
+    };
+
+    // Setting any state requests an update
+    deepObserve(this.values, requestUpdate);
+  }
+
+  setupRender() {
+    let disposeRender: IReactionDisposer;
+    let resizeHandler: EventListener;
+    reaction(
+      () => this.draw,
+      (draw) => {
+        console.log('setting up rendering');
+        if (disposeRender) disposeRender();
+        if (resizeHandler) window.removeEventListener('resize', resizeHandler);
+        if (!draw) return;
+
+        disposeRender = reaction(
+          () => this.frameId,
+          (frameId) => {
+            // console.log('render', frameId);
+            draw();
+          },
+          { name: 'render' },
+        );
+        resizeHandler = () => {
+          this.regl.poll();
+          draw();
+        };
+        window.addEventListener('resize', resizeHandler);
+      },
+    );
+  }
 
   generateName() {
     return `unnamed_${this.unnamed++}`;
   }
+
+  addGui = (name: string, value: any) => {
+    this.ui[name] = value;
+    this.gui.add(this.ui, name);
+  };
 
   float = (
     name = this.generateName(),
@@ -68,7 +144,7 @@ export class Shader {
     this.values[name] = uniform;
     if ('script' in config) {
       const { script } = config as ScriptConfig<U>;
-      script?.(uniform);
+      script?.(uniform, this.onFrame);
     } else if (type === 'color') {
       this.gui.addColor(this.guiValues, name);
     } else {
@@ -79,18 +155,16 @@ export class Shader {
     return name;
   };
 
+  frameCallbacks: FrameRequestCallback[] = [];
+  onFrame = (callback: FrameRequestCallback) => {
+    this.frameCallbacks.push(callback);
+  };
+
   @computed get header() {
     return Object.entries(this.glValues).reduce((header, [name, uniform]) => {
       const declaration = `uniform ${uniform.type} ${name};`;
       return `${header}\n${declaration}`;
     }, '');
-  }
-
-  @computed get props() {
-    return Object.entries(this.glValues).reduce((props, [name, uniform]) => {
-      props[name] = uniform.value;
-      return props;
-    }, {} as GLUniforms);
   }
 
   get canvas(): HTMLCanvasElement {
@@ -101,22 +175,26 @@ export class Shader {
     const config = reglMerge(quad, {
       frag: `\n${this.header}\n${reduceTemplateString(shaderBody, ...splices)}`,
       uniforms: Object.keys(this.glValues).reduce((u, key) => {
-        u[key] = this.regl.prop<GLUniforms, string>(key);
+        u[key] = () => this.glValues[key].value; //this.regl.prop<GLUniforms, string>(key);
         return u;
       }, {} as any),
     });
 
     // Log complete shader source
-    console.log(config.frag);
+    // console.log(config.frag);
 
-    const draw = this.regl(config);
-
-    autorun(() => draw(this.props));
-    window.addEventListener('resize', () => {
-      this.regl.poll();
-      draw(this.props);
-    });
+    this.draw = this.regl(config);
   };
+
+  saveGuiValues() {
+    this.gui.useLocalStorage = true;
+    setTimeout(() => {
+      this.gui.domElement
+        .querySelector<HTMLElement>('.save-row')!
+        .setAttribute('style', 'display: none');
+    }, 0);
+    this.gui.remember(this.guiValues, this.ui);
+  }
 }
 
 function guiUniformProxy(store: UniformStore) {

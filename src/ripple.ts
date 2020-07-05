@@ -1,64 +1,110 @@
 import { Shader } from './Shader';
-import { autorun, observable } from 'mobx';
+import { autorun, action } from 'mobx';
+import { Vec2, Vec3 } from 'regl';
 
-const { glsl, canvas, gui, prop, float, color } = new Shader();
-
-const options = observable({
-  animate: true,
-});
-
-gui.add(options, 'animate');
+const shader = new Shader();
+const { glsl, prop, float, color } = shader;
 
 prop({
   name: 'u_time',
   type: 'float',
   value: 0,
-  script: (time) => {
-    let raf: number;
+  script: (time, onFrame) => {
+    shader.addGui('animate', true);
     let lastTime = 0;
     let t = 0;
     const update = (elapsed: number) => {
+      if (!shader.ui.animate) return;
       const dt = (elapsed - lastTime) / 1000;
       t += dt;
       lastTime = elapsed;
       time.value = t;
-      raf = requestAnimationFrame(update);
     };
     autorun(() => {
-      if (options.animate) {
+      if (shader.ui.animate) {
         lastTime = performance.now();
-        update(lastTime);
-      } else {
-        cancelAnimationFrame(raf);
+        requestAnimationFrame(update);
       }
     });
+    onFrame(update);
   },
 });
+
+function glCoordinatesFromMouseEvent(e: MouseEvent, out: Vec2 | Vec3) {
+  out[0] = e.clientX * window.devicePixelRatio;
+  out[1] =
+    ((e.target as HTMLElement).clientHeight - e.clientY) *
+    window.devicePixelRatio;
+}
 
 prop({
   name: 'u_mouse',
   type: 'vec2',
-  value: [canvas.clientWidth / 2, canvas.clientHeight / 2],
+  value: [shader.canvas.clientWidth / 2, shader.canvas.clientHeight / 2],
   script: (mouse) => {
-    canvas.addEventListener('mousemove', (e) => {
-      mouse.value[0] = e.clientX * window.devicePixelRatio;
-      mouse.value[1] =
-        (canvas.clientHeight - e.clientY) * window.devicePixelRatio;
-    });
+    shader.canvas.addEventListener(
+      'mousemove',
+      action('mousemove', (e) => {
+        glCoordinatesFromMouseEvent(e, mouse.value);
+      }),
+    );
+  },
+});
+
+prop({
+  name: 'u_click',
+  type: 'vec3',
+  value: [
+    shader.canvas.clientWidth / 2,
+    shader.canvas.clientHeight / 2,
+    Number.MIN_VALUE,
+  ],
+  script: (click) => {
+    shader.canvas.addEventListener(
+      'mousedown',
+      action((e) => {
+        glCoordinatesFromMouseEvent(e, click.value);
+        click.value[2] = shader.values.u_time.value as number;
+      }),
+    );
   },
 });
 
 glsl`
-float sdCircle(vec2 p) {
-  return length(p);
+#define INFINITY ${Number.MAX_VALUE.toString()}
+#define normalized(x) clamp(x, 0., 1.)
+
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+
+ float sdRing(float d, float r) {
+  return abs(d) - r;
+ }
+
+// https://www.iquilezles.org/www/articles/smin/smin.htm 
+float opUnion(float a, float b) {
+  // return min(a, b);
+  float k = ${float('blend', 0.1)};
+  float h = clamp( 0.5+0.5*(b-a)/k, 0.0, 1.0 );
+  return mix( b, a, h ) - k*h*(1.0-h);
 }
 
 void main() {
+  vec2 p = st();
   vec2 mouse = coord(u_mouse);
   vec3 baseColor = ${color('base_color')};
   vec3 color = ${color('color', '#ffaaaa')};
-  float d = sdCircle(st() - mouse);
-  d = step(d, ${float('radius', 0.05)} + 0.015 * sin(u_time * 5.));
+  float r = ${float('radius', 0.05)} + 0.015 * sin(u_time * 5.);
+  float d = INFINITY;
+
+  float clickTime = u_time - u_click.z;
+
+  d = opUnion(d, sdCircle(p - mouse, r));
+  d = opUnion(d, sdRing(sdCircle(p - coord(u_click.xy), clickTime), 0.01));
+
+  d = step(d, 0.);
+
   gl_FragColor = vec4(mix(baseColor, color, d), 1.);
 }
 `;
