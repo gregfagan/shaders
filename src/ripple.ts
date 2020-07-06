@@ -1,11 +1,10 @@
-import { Shader } from './Shader';
+import { Shader, glsl } from './Shader';
 import { autorun, action } from 'mobx';
 import { Vec2, Vec3 } from 'regl';
 
 const shader = new Shader();
-const { glsl, prop, float, color } = shader;
 
-prop({
+shader.prop({
   name: 'u_time',
   type: 'float',
   value: 0,
@@ -37,7 +36,7 @@ function glCoordinatesFromMouseEvent(e: MouseEvent, out: Vec2 | Vec3) {
     window.devicePixelRatio;
 }
 
-prop({
+shader.prop({
   name: 'u_mouse',
   type: 'vec2',
   value: [shader.canvas.clientWidth / 2, shader.canvas.clientHeight / 2],
@@ -51,7 +50,7 @@ prop({
   },
 });
 
-prop({
+shader.prop({
   name: 'u_click',
   type: 'vec3',
   value: [
@@ -70,7 +69,7 @@ prop({
   },
 });
 
-glsl`
+shader.source = glsl`
 #define INFINITY ${Number.MAX_VALUE.toString()}
 #define normalized(x) clamp(x, 0., 1.)
 
@@ -85,7 +84,7 @@ float sdCircle(vec2 p, float r) {
 // https://www.iquilezles.org/www/articles/smin/smin.htm 
 float opUnion(float a, float b) {
   // return min(a, b);
-  float k = ${float('blend', 0.1)};
+  float k = ${shader.float('blend', 0.1)};
   float h = clamp( 0.5+0.5*(b-a)/k, 0.0, 1.0 );
   return mix( b, a, h ) - k*h*(1.0-h);
 }
@@ -93,17 +92,23 @@ float opUnion(float a, float b) {
 void main() {
   vec2 p = st();
   vec2 mouse = coord(u_mouse);
-  vec3 baseColor = ${color('base_color')};
-  vec3 color = ${color('color', '#ffaaaa')};
-  float r = ${float('radius', 0.05)} + 0.015 * sin(u_time * 5.);
-  float d = INFINITY;
-
+  vec3 baseColor = ${shader.color('base_color')};
+  vec3 color = ${shader.color('color', '#ffaaaa')};
+  float r = ${shader.float('radius', 0.05)} + 0.015 * sin(u_time * 5.);
   float clickTime = u_time - u_click.z;
 
+  float d = INFINITY;
   d = opUnion(d, sdCircle(p - mouse, r));
-  d = opUnion(d, sdRing(sdCircle(p - coord(u_click.xy), clickTime), 0.01));
+  d = opUnion(d, sdRing(sdCircle(p - coord(u_click.xy), clickTime * ${shader.float(
+    'speed',
+    2.5,
+    0.1,
+    10,
+  )}), ${shader.float('ring_thickness', 0.1, 0.01, 0.2)}));
 
-  d = step(d, 0.);
+  if(!${shader.prop({ type: 'bool', value: true, name: 'showField' })}) {
+    d = step(d, 0.);
+  }
 
   gl_FragColor = vec4(mix(baseColor, color, d), 1.);
 }

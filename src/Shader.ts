@@ -19,6 +19,7 @@ import {
 import { quad } from './quad';
 
 export type GLUniform =
+  | { type: 'bool'; value: boolean }
   | { type: 'float'; value: number }
   | { type: 'vec2'; value: Vec2 }
   | { type: 'vec3'; value: Vec3 }
@@ -56,9 +57,9 @@ export class Shader {
   glValues = glUniformProxy(this.values);
 
   // Renderer
-  @observable.ref private draw: REGL.DrawCommand | null = null;
   @observable private frameId = 0;
   @observable private updateRequested = false;
+  @observable source = '';
 
   constructor(public regl: REGL.Regl = REGL()) {
     this.saveGuiValues();
@@ -171,9 +172,10 @@ export class Shader {
     return this.regl._gl.canvas as HTMLCanvasElement;
   }
 
-  public glsl = (shaderBody: TemplateStringsArray, ...splices: string[]) => {
+  @computed({ keepAlive: true }) get draw() {
+    if (this.source === '') return null;
     const config = reglMerge(quad, {
-      frag: `\n${this.header}\n${reduceTemplateString(shaderBody, ...splices)}`,
+      frag: `\n${this.header}\n${this.source}`,
       uniforms: Object.keys(this.glValues).reduce((u, key) => {
         u[key] = () => this.glValues[key].value; //this.regl.prop<GLUniforms, string>(key);
         return u;
@@ -183,8 +185,8 @@ export class Shader {
     // Log complete shader source
     // console.log(config.frag);
 
-    this.draw = this.regl(config);
-  };
+    return this.regl(config);
+  }
 
   saveGuiValues() {
     this.gui.useLocalStorage = true;
@@ -227,3 +229,6 @@ function glUniformProxy(store: UniformStore) {
     },
   });
 }
+
+export const glsl = (template: TemplateStringsArray, ...splices: string[]) =>
+  reduceTemplateString(template, ...splices);
