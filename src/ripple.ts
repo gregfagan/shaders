@@ -106,7 +106,7 @@ void main() {
     10,
   )}), ${shader.float('ring_thickness', 0.1, 0.01, 0.2)}));
 
-  if(!${shader.prop({ type: 'bool', value: true, name: 'showField' })}) {
+  if(!${shader.bool('showField')}) {
     d = step(d, 0.);
   }
 

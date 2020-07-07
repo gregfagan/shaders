@@ -122,6 +122,9 @@ export class Shader {
     this.gui.add(this.ui, name);
   };
 
+  bool = (name = this.generateName(), value = true) =>
+    this.prop({ name, value, type: 'bool' });
+
   float = (
     name = this.generateName(),
     value = 0,
@@ -230,5 +233,4 @@ function glUniformProxy(store: UniformStore) {
   });
 }
 
-export const glsl = (template: TemplateStringsArray, ...splices: string[]) =>
-  reduceTemplateString(template, ...splices);
+export const glsl = reduceTemplateString;
