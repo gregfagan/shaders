@@ -1,10 +1,6 @@
 import REGL from 'regl';
 import { reglMerge } from './utils';
-import { quad } from './quad';
-import { stream, event, log } from './stream';
-import { seconds, stopwatch } from './clock';
-import R from 'ramda';
-import flyd from 'flyd';
+import { gui } from './gui';
 
 type Value = {
   float: number;
@@ -14,6 +10,26 @@ type Value = {
   vec3: REGL.Vec3;
   vec4: REGL.Vec4;
 };
+
+function isFloat(value: any): value is Value['float'] {
+  return typeof value === 'number';
+}
+
+function isBool(value: any): value is Value['bool'] {
+  return typeof value === 'boolean';
+}
+
+function isVec2(value: any): value is Value['vec2'] {
+  return Array.isArray(value) && value.length === 2;
+}
+
+function isVec3(value: any): value is Value['vec2'] {
+  return Array.isArray(value) && value.length === 3;
+}
+
+function isVec4(value: any): value is Value['vec2'] {
+  return Array.isArray(value) && value.length === 4;
+}
 
 type NamedConfig = [string, REGL.DrawConfig];
 type Config = NamedConfig | REGL.DrawConfig;
@@ -56,27 +72,11 @@ export function uniform<T extends keyof Value>(
   ];
 }
 
-const hasFocus = stream.merge(
-  stream(document.hasFocus()),
-  stream
-    .merge(event(window, 'focus'), event(window, 'blur'))
-    .map(R.prop('type'))
-    .map(R.equals('focus')),
-);
-
-const pause = hasFocus.map(R.not).map(log('pause'));
-const clock = stopwatch(pause);
-const color = stream<REGL.Vec3>([0.5, 0.1, 0.9]);
-clock
-  .pipe(seconds)
-  .map(log('clock'))
-  .map(() => color([Math.random(), Math.random(), Math.random()]));
-
-const render = REGL()(glsl`
-  ${quad}
-  void main() {
-    gl_FragColor = vec4(${uniform(color, 'color', 'vec3')}, 1.);
+export function ugui<T>(name: string, defaultValue: T) {
+  if (isFloat(defaultValue)) {
+    return uniform(gui(name, defaultValue), name, 'float');
+  } else if (isBool(defaultValue)) {
+    return uniform(gui(name, defaultValue), name, 'bool');
   }
-  `);
-
-color.map(render);
+  throw new Error('bad uniform type');
+}
