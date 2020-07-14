@@ -1,6 +1,6 @@
 import REGL from 'regl';
 import { reglMerge } from './utils';
-import { gui } from './gui';
+import { gui, AddGuiArgs } from './gui';
 
 type Value = {
   float: number;
@@ -32,30 +32,32 @@ function isVec4(value: any): value is Value['vec2'] {
 }
 
 type NamedConfig = [string, REGL.DrawConfig];
-type Config = NamedConfig | REGL.DrawConfig;
+type GLSLTemplateParameter = REGL.DrawConfig | NamedConfig | string;
 
-function hasName(config: Config): config is NamedConfig {
-  return Array.isArray(config) && config.length >= 2;
-}
+function asNamedConfig(param: GLSLTemplateParameter): NamedConfig {
+  if (typeof param === 'string') {
+    return [param, {}];
+  } else if (typeof param === 'object' && !Array.isArray(param)) {
+    return ['', param as REGL.DrawConfig];
+  } else if (Array.isArray(param) && param.length === 2) {
+    return param;
+  }
 
-function getName(config: Config) {
-  return hasName(config) ? config[0] : '';
-}
-
-function getConfig(config: Config) {
-  return hasName(config) ? config[1] : config;
+  throw new Error('invalid glsl template parameter');
 }
 
 export function glsl(
   template: TemplateStringsArray,
-  ...configs: Array<REGL.DrawConfig | NamedConfig>
+  ...configs: Array<GLSLTemplateParameter>
 ): REGL.DrawConfig {
   const frag = template.reduce((result, segment, index) => {
-    const config = configs[index - 1];
-    return `${result}${getName(config)}${segment}`;
+    const [name] = asNamedConfig(configs[index - 1]);
+    return `${result}${name}${segment}`;
   });
 
-  return [...configs.map(getConfig), { frag }].reduce(reglMerge);
+  return [...configs.map((c) => asNamedConfig(c)[1]), { frag }].reduce(
+    reglMerge,
+  );
 }
 
 export function uniform<T extends keyof Value>(
@@ -72,9 +74,9 @@ export function uniform<T extends keyof Value>(
   ];
 }
 
-export function ugui<T>(name: string, defaultValue: T) {
+export function ugui<T>(name: string, defaultValue: T, ...args: AddGuiArgs) {
   if (isFloat(defaultValue)) {
-    return uniform(gui(name, defaultValue), name, 'float');
+    return uniform(gui(name, defaultValue, ...args), name, 'float');
   } else if (isBool(defaultValue)) {
     return uniform(gui(name, defaultValue), name, 'bool');
   }
