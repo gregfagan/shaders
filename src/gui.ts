@@ -1,4 +1,4 @@
-import { GUI } from 'dat.gui';
+import { GUI, GUIController, controllers } from 'dat.gui';
 import { stream, log } from './stream';
 
 interface Store {
@@ -10,23 +10,24 @@ interface Store {
  * Object proxy which internally stores state in streams. access streams
  * through $.
  */
-const store: Store = new Proxy<Record<string, flyd.Stream<unknown>>>(
-  {},
-  {
-    get(target, key: string) {
-      return key === '$' ? target : target[key]?.() ?? undefined;
+export const streamProxy: () => Store = () =>
+  new Proxy<Record<string, flyd.Stream<unknown>>>(
+    {},
+    {
+      get(target, key: string) {
+        return key === '$' ? target : target[key]?.() ?? undefined;
+      },
+      set(target, key: string, value) {
+        const $ = target[key];
+        if ($) {
+          $(value);
+        } else {
+          target[key] = stream(value);
+        }
+        return true;
+      },
     },
-    set(target, key: string, value) {
-      const $ = target[key];
-      if ($) {
-        $(value);
-      } else {
-        target[key] = stream(value);
-      }
-      return true;
-    },
-  },
-) as Store;
+  ) as Store;
 
 /**
     add(target: Object, propName:string, min?: number, max?: number, step?: number): GUIController;
@@ -36,6 +37,29 @@ const store: Store = new Proxy<Record<string, flyd.Stream<unknown>>>(
     add(target: Object, propName:string, items:Object): GUIController;
     addColor(target: Object, propName:string): GUIController;
  */
+
+export interface GUIAutoAdd {
+  <T>(
+    value: T,
+    name: string,
+    min?: number,
+    max?: number,
+    step?: number,
+  ): GUIController;
+  <T>(value: T, name: string, status: boolean): GUIController;
+  <T>(value: T, name: string, items: string[]): GUIController;
+  <T>(value: T, name: string, items: number[]): GUIController;
+  <T>(value: T, name: string, items: Object[]): GUIController;
+}
+
+export interface GUIAutoAddColor {
+  (value: string, name: string): GUIController;
+}
+
+export type AutoGUI = Omit<GUI, 'add' | 'addColor'> & {
+  add: GUIAutoAdd;
+  addColor: GUIAutoAddColor;
+};
 
 type Maybe<T> = T | undefined;
 
@@ -49,20 +73,20 @@ export type AddGuiArgs =
   | [number[]]
   | [Object];
 
-const g = new GUI();
-g.domElement.parentElement?.setAttribute('style', 'z-index: 1');
-
-// export function gui<T>(name: string, defaultValue: T): flyd.Stream<T>;
-export function gui<T>(
-  name: string,
-  defaultValue: T,
-  ...args: AddGuiArgs
-): flyd.Stream<T> {
-  store[name] = defaultValue;
-  // @ts-expect-error
-  g.add(store, name, ...args);
-  return store.$[name] as flyd.Stream<T>;
-}
+// const g = new GUI();
+// g.domElement.parentElement?.setAttribute('style', 'z-index: 1');
+// const store = streamProxy();
+// // export function gui<T>(name: string, defaultValue: T): flyd.Stream<T>;
+// export function gui<T>(
+//   name: string,
+//   defaultValue: T,
+//   ...args: AddGuiArgs
+// ): flyd.Stream<T> {
+//   store[name] = defaultValue;
+//   // @ts-expect-error
+//   g.add(store, name, ...args);
+//   return store.$[name] as flyd.Stream<T>;
+// }
 
 /**
  * A stream of changed gui values
@@ -77,4 +101,8 @@ export function guiChanged() {
     // @ts-expect-error
     streams,
   );
+}
+
+export function isGUIController(x: unknown): x is GUIController {
+  return x instanceof controllers.Controller;
 }

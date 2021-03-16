@@ -1,6 +1,7 @@
 import REGL from 'regl';
 import { reglMerge } from './utils';
-import { gui, AddGuiArgs } from './gui';
+import { gui, AddGuiArgs, AutoGUI, isGUIController } from './gui';
+import { controllers, GUIController } from 'dat.gui';
 
 type Value = {
   float: number;
@@ -10,6 +11,8 @@ type Value = {
   vec3: REGL.Vec3;
   vec4: REGL.Vec4;
 };
+
+const type: (keyof Value)[] = ['float', 'int', 'bool', 'vec2', 'vec3', 'vec4'];
 
 function isFloat(value: any): value is Value['float'] {
   return typeof value === 'number';
@@ -60,25 +63,64 @@ export function glsl(
   );
 }
 
+let nameId = 1;
+const generateName = () => `unnamed_${nameId++}`;
+
+const inferType = (v: unknown): keyof Value => {
+  if (isFloat(v)) {
+    return 'float';
+  } else if (isBool(v)) {
+    return 'bool';
+  } else if (isVec2(v)) {
+    return 'vec2';
+  } else if (isVec3(v)) {
+    return 'vec3';
+  } else if (isVec4(v)) {
+    return 'vec4';
+  }
+  throw new Error('could not infer uniform type');
+};
+
+const isType = (t: any): t is keyof Value => type.includes(t);
+
+//
+//
+// TODO
+//
+//    Change to accept an AutoGUI, rather than a GUIController;
+//    return a curried function to fill in gui parameters, but
+//    give reasonable defaults. convert strings to colors.
+//
+//
 export function uniform<T extends keyof Value>(
-  value: () => Value[T],
-  name: string,
-  type: T,
+  value: (() => Value[T]) | GUIController,
+  nameOrValue: string = generateName(),
+  type?: T,
 ): NamedConfig {
+  const name = isGUIController(value)
+    ? value.property
+    : isType(nameOrValue)
+    ? generateName()
+    : nameOrValue;
+  const getValue = isGUIController(value)
+    ? () => (value.object as Record<string, unknown>)[name]
+    : () => value();
+  const finalType =
+    type ?? (isType(nameOrValue) ? nameOrValue : inferType(getValue()));
   return [
     name,
     {
-      frag: `uniform ${type} ${name};`,
-      uniforms: { [name]: () => value() },
+      frag: `uniform ${finalType} ${name};`,
+      uniforms: { [name]: getValue },
     },
   ];
 }
 
-export function ugui<T>(name: string, defaultValue: T, ...args: AddGuiArgs) {
-  if (isFloat(defaultValue)) {
-    return uniform(gui(name, defaultValue, ...args), name, 'float');
-  } else if (isBool(defaultValue)) {
-    return uniform(gui(name, defaultValue), name, 'bool');
-  }
-  throw new Error('bad uniform type');
-}
+// export function ugui<T>(name: string, defaultValue: T, ...args: AddGuiArgs) {
+//   if (isFloat(defaultValue)) {
+//     return uniform(gui(name, defaultValue, ...args), name, 'float');
+//   } else if (isBool(defaultValue)) {
+//     return uniform(gui(name, defaultValue), name, 'bool');
+//   }
+//   throw new Error('bad uniform type');
+// }

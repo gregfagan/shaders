@@ -6,9 +6,26 @@ import { glsl, uniform, ugui } from './tools';
 import { quad } from './quad';
 import { sdf } from './sdf';
 import { glCoordinatesFromMouseEvent } from './utils';
+import { GUI } from 'dat.gui';
+import { streamProxy, AutoGUI } from './gui';
 
 const regl = REGL();
 const { canvas } = regl._gl;
+const store = streamProxy();
+const autoAdd = (gui: GUI, target: Record<string, unknown>) => {
+  (['add', 'addColor'] as Extract<keyof GUI, 'add' | 'addColor'>[]).forEach(
+    (method) => {
+      const original = gui[method];
+      gui[method] = <T>(defaultValue: T, name: string, ...args: any) => {
+        target[name] = defaultValue;
+        // @ts-expect-error
+        return original.call(gui, target, name, ...args);
+      };
+    },
+  );
+  return gui as AutoGUI;
+};
+const gui = autoAdd(new GUI(), store);
 
 // set up a clock which stops without focus
 const hasFocus = stream.merge(
@@ -36,22 +53,23 @@ const color = stream.merge<REGL.Vec3, REGL.Vec3>(
     .map(() => [Math.random(), Math.random(), Math.random()]),
 );
 
-const render = regl(glsl`
-  ${quad}
-  ${sdf}
+const draw = glsl`
+${quad}
+${sdf}
+void main() {
+  vec2 p = st();
+  vec2 m = coord(${uniform(mouse)});
+  float d = sdCircle(p - m, ${uniform(gui.add(0.1, 'u_radius', 0.1, 1))});
+  d = step(0., d);
+  vec3 color = mix(
+    vec3(0),
+    ${uniform(color, 'u_color', 'vec3')},
+    1. - d
+  );
+  gl_FragColor = vec4(color, 1.);
+}
+`;
+console.log(draw.frag);
 
-  void main() {
-    vec2 p = st();
-    vec2 m = coord(${uniform(mouse, 'u_mouse', 'vec2')});
-    float d = sdCircle(p - m, ${ugui('u_radius', 0.1, 0.1, 1)});
-    d = step(0., d);
-    vec3 color = mix(
-      vec3(0),
-      ${uniform(color, 'color', 'vec3')},
-      1. - d
-    );
-    gl_FragColor = vec4(color, 1.);
-  }
-`);
-
+const render = regl(draw);
 stream.on(() => render(), clock);
