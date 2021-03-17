@@ -1,14 +1,13 @@
-import { stream, Stream } from './stream';
-
-export interface Store {
-  $: Record<string, Stream<unknown>>;
-  [key: string]: unknown;
-}
+import { stream, Stream } from '.';
 
 /**
  * Object proxy which internally stores state in streams. access streams
  * through $.
  */
+export interface Store {
+  $: Record<string, Stream<unknown>>;
+  [key: string]: unknown;
+}
 export class Store {
   constructor() {
     return new Proxy<Record<string, Stream<unknown>>>(
@@ -31,6 +30,11 @@ export class Store {
   }
 }
 
+/**
+ * A stream which updates when any of the streams on a store change
+ *
+ * TODO: doesn't update if streams are added or removed
+ */
 export function changed(store: Store): Stream<unknown> {
   const streams = Object.values(store.$);
   return stream.combine<unknown, unknown>(

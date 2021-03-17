@@ -1,5 +1,5 @@
 import R from 'ramda';
-import { stream, switchLatest, everyNth, Stream } from './stream';
+import { stream, switchLatest, everyNth, Stream } from '.';
 
 /**
  * Wall time updated by animation frame (60Hz)

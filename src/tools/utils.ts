@@ -49,9 +49,3 @@ export function toGLColor(guiColor: string): REGL.Vec3 {
     parseInt(test[3], 16) / 255,
   ];
 }
-
-export const glCoordinatesFromMouseEvent = (e: MouseEvent): REGL.Vec2 => [
-  e.clientX * window.devicePixelRatio,
-  ((e.target as HTMLElement).clientHeight - e.clientY) *
-    window.devicePixelRatio,
-];

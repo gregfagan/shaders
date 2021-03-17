@@ -1,4 +1,4 @@
-const tsconfig = fetch("tsconfig.json").then(r => r.json());
+const tsconfig = fetch('tsconfig.json').then(r => r.json());
 const endsWithFileExtension = /\/?\.[a-zA-Z]{2,}$/;
 const endsWithTS = /^.*\.ts/;
 
@@ -7,9 +7,11 @@ function hook(global) {
 
   // Automatically resolve bare specifiers with `.ts` extension
   const originalResolve = systemJS.resolve;
-  systemJS.resolve = (...args) => {
-    const url = originalResolve.apply(this, args);
-    return endsWithFileExtension.test(url) ? url : url + ".ts";
+  systemJS.resolve = (name, location) => {
+    if (name === '.') name = './index.ts';
+    const url = originalResolve.call(this, name, location);
+    const result = endsWithFileExtension.test(url) ? url : url + '.ts';
+    return result;
   };
 
   // Always fetch modules so we can apply transformations
@@ -22,9 +24,9 @@ function hook(global) {
       endsWithTS.test(url)
         ? ts.transpileModule(source, await tsconfig).outputText
         : source,
-      { headers: { "content-type": "application/javascript" } }
+      { headers: { 'content-type': 'application/javascript' } }
     );
   };
 }
 
-hook(typeof self !== "undefined" ? self : global);
+hook(typeof self !== 'undefined' ? self : global);

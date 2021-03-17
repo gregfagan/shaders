@@ -1,5 +1,5 @@
 import { GUI, GUIController } from 'dat.gui';
-import { Store } from './store';
+import { Store } from './stream/store';
 
 /**
  * A normal dat.GUI requires you to create an object and populate it with

@@ -1,13 +1,13 @@
 import R from 'ramda';
-import REGL, { Vec2 } from 'regl';
-import { stream, event, log } from './tools/stream';
-import { stopwatch, seconds } from './tools/clock';
+import REGL from 'regl';
+import { stream, log } from './tools/stream';
+import { stopwatch, seconds } from './tools/stream/time';
+import { Store } from './tools/stream/store';
+import { documentHasFocus, mousePosition } from './tools/stream/dom';
 import { glsl, uniform } from './tools/tools';
 import { quad } from './tools/quad';
 import { sdf } from './tools/sdf';
-import { glCoordinatesFromMouseEvent } from './tools/utils';
 import { AutoGUI } from './tools/gui';
-import { Store } from './tools/store';
 
 const regl = REGL();
 const { canvas } = regl._gl;
@@ -16,21 +16,11 @@ const store = new Store();
 const gui = new AutoGUI({ store });
 
 // set up a clock which stops without focus
-const hasFocus = stream.merge(
-  stream(document.hasFocus()),
-  stream
-    .merge(event(window, 'focus'), event(window, 'blur'))
-    .map(R.prop('type'))
-    .map(R.equals('focus'))
-);
-const pause = hasFocus.map(R.not).map(log('pause'));
+const pause = documentHasFocus.map(R.not).map(log('pause'));
 const clock = stopwatch(pause);
 
 // track mouse
-const mouse = stream.merge(
-  stream.of<Vec2>([canvas.width / 2, canvas.height / 2]),
-  event<MouseEvent>(canvas, 'mousemove').map(glCoordinatesFromMouseEvent)
-);
+const mouse = mousePosition(canvas);
 
 // Change color every second
 const color = stream.merge<REGL.Vec3, REGL.Vec3>(
@@ -48,7 +38,7 @@ void main() {
   d = step(0., d);
   vec3 color = mix(
     vec3(0),
-    ${uniform(color, 'u_color', 'vec3')},
+    ${uniform(color)},
     1. - d
   );
   gl_FragColor = vec4(color, 1.);
