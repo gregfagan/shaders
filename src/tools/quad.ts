@@ -1,5 +1,9 @@
 import type REGL from 'regl';
 
+/**
+ * A REGL DrawConfig that draws a simple quad to the screen, with an inscribed
+ * square coordinate system accesible through included glsl functions.
+ */
 export const quad: REGL.DrawConfig = {
   primitive: 'triangle strip',
   count: 4,

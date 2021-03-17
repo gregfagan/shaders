@@ -1,7 +1,9 @@
-import R from "ramda";
-import flyd from "flyd";
+import R from 'ramda';
+import flyd from 'flyd';
 
-type StreamAPI = flyd.Static & flyd.CreateStream & { of: flyd.CreateStream };
+export import Stream = flyd.Stream;
+export type StreamAPI = flyd.Static &
+  flyd.CreateStream & { of: flyd.CreateStream };
 
 /**
  * Better flyd API by combining CreateStream with static, like mithril
@@ -12,20 +14,17 @@ Object.assign(stream, { ...flyd, of: stream });
 export const log = <T>(...args: any[]) =>
   R.tap<T>(R.partial<any>(console.log, args));
 
-export const sample = <T>(what: flyd.Stream<T>, when: flyd.Stream<any>) =>
+export const sample = <T>(what: Stream<T>, when: Stream<any>) =>
   stream.combine(() => what(), [when]);
 
-export function event<T = Event>(
-  target: EventTarget,
-  name: string
-): flyd.Stream<T> {
+export function event<T = Event>(target: EventTarget, name: string): Stream<T> {
   const s = stream.of<T>();
   target.addEventListener(name, s);
   return s;
 }
 
-export function switchLatest<T>(s: flyd.Stream<flyd.Stream<T>>) {
-  return stream.combine<flyd.Stream<T>, T>(
+export function switchLatest<T>(s: Stream<Stream<T>>) {
+  return stream.combine<Stream<T>, T>(
     (stream$, self) => {
       stream$().map(self);
     },

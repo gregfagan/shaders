@@ -1,5 +1,5 @@
-import R from "ramda";
-import { stream, switchLatest, everyNth } from "./stream";
+import R from 'ramda';
+import { stream, switchLatest, everyNth, Stream } from './stream';
 
 /**
  * Wall time updated by animation frame (60Hz)
@@ -25,8 +25,8 @@ export function clock() {
  *
  * @param stopped a stream to start and stop the stopwatch
  */
-export function stopwatch(stopped: flyd.Stream<boolean>) {
-  const clocks = stream.combine<boolean, flyd.Stream<number>>(
+export function stopwatch(stopped: Stream<boolean>) {
+  const clocks = stream.combine<boolean, Stream<number>>(
     (stopped, self) => {
       if (stopped()) {
         if (self()) {
@@ -47,7 +47,7 @@ export function stopwatch(stopped: flyd.Stream<boolean>) {
 /**
  * A stream of the delta between values from the input stream
  */
-export function delta(s: flyd.Stream<number>) {
+export function delta(s: Stream<number>) {
   let last: number;
   return stream.combine<number, number>(
     (current, self) => {

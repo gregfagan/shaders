@@ -1,7 +1,7 @@
 import REGL from 'regl';
 import { reglMerge } from './utils';
-import { gui, AddGuiArgs, AutoGUI, isGUIController } from './gui';
-import { controllers, GUIController } from 'dat.gui';
+import { isGUIController } from './gui';
+import { GUIController } from 'dat.gui';
 
 type Value = {
   float: number;
@@ -58,9 +58,7 @@ export function glsl(
     return `${result}${name}${segment}`;
   });
 
-  return [...configs.map((c) => asNamedConfig(c)[1]), { frag }].reduce(
-    reglMerge,
-  );
+  return [...configs.map(c => asNamedConfig(c)[1]), { frag }].reduce(reglMerge);
 }
 
 let nameId = 1;
@@ -95,7 +93,7 @@ const isType = (t: any): t is keyof Value => type.includes(t);
 export function uniform<T extends keyof Value>(
   value: (() => Value[T]) | GUIController,
   nameOrValue: string = generateName(),
-  type?: T,
+  type?: T
 ): NamedConfig {
   const name = isGUIController(value)
     ? value.property
@@ -115,12 +113,3 @@ export function uniform<T extends keyof Value>(
     },
   ];
 }
-
-// export function ugui<T>(name: string, defaultValue: T, ...args: AddGuiArgs) {
-//   if (isFloat(defaultValue)) {
-//     return uniform(gui(name, defaultValue, ...args), name, 'float');
-//   } else if (isBool(defaultValue)) {
-//     return uniform(gui(name, defaultValue), name, 'bool');
-//   }
-//   throw new Error('bad uniform type');
-// }

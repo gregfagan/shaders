@@ -25,6 +25,7 @@
     "regl": "/node_modules/regl/dist/regl.js"
   },
   "prettier": {
-    "arrowParens": "avoid"
+    "arrowParens": "avoid",
+    "singleQuote": true
   }
 }

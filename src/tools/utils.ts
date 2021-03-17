@@ -1,5 +1,11 @@
 import type REGL from 'regl';
 
+/**
+ * Merges REGL DrawConfigs, concatenating strings (like shader code)
+ * where necessary.
+ *
+ * TODO: stronger types
+ */
 export function reglMerge<T extends REGL.DrawConfig>(a: T, b: T) {
   return Object.entries(b).reduce(
     (result: any, [key, value]) => {
@@ -9,16 +15,17 @@ export function reglMerge<T extends REGL.DrawConfig>(a: T, b: T) {
           : { ...result[key], ...value };
       return result;
     },
-    { ...a },
+    { ...a }
   );
 }
 
+// just concatenates strings that were spliced into a template function
 export function reduceTemplateString(
   template: TemplateStringsArray,
   ...splices: string[]
 ) {
   return template.reduce(
-    (result, segment) => `${result}${splices.shift() ?? ''}${segment}`,
+    (result, segment) => `${result}${splices.shift() ?? ''}${segment}`
   );
 }
 
