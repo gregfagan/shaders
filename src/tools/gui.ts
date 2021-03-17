@@ -1,106 +1,49 @@
-import { GUI, GUIController, controllers } from 'dat.gui';
-import { stream, log } from './stream';
-
-interface Store {
-  $: Record<string, flyd.Stream<unknown>>;
-  [key: string]: unknown;
-}
+import { GUI, GUIController } from 'dat.gui';
+import { Store } from './store';
 
 /**
- * Object proxy which internally stores state in streams. access streams
- * through $.
+ * A normal dat.GUI requires you to create an object and populate it with
+ * default values before using it. This AutoGUI will instead manage that
+ * for you, changing the `add` APIs to include the default value first.
+ *
+ * TODO: stronger types
+ * TODO: instead of patching, maybe extend GUI and add new "auto" APIs?
  */
-export const streamProxy: () => Store = () =>
-  new Proxy<Record<string, flyd.Stream<unknown>>>(
-    {},
-    {
-      get(target, key: string) {
-        return key === '$' ? target : target[key]?.() ?? undefined;
-      },
-      set(target, key: string, value) {
-        const $ = target[key];
-        if ($) {
-          $(value);
-        } else {
-          target[key] = stream(value);
-        }
-        return true;
-      },
-    }
-  ) as Store;
-
-/**
-    add(target: Object, propName:string, min?: number, max?: number, step?: number): GUIController;
-    add(target: Object, propName:string, status: boolean): GUIController;
-    add(target: Object, propName:string, items:string[]): GUIController;
-    add(target: Object, propName:string, items:number[]): GUIController;
-    add(target: Object, propName:string, items:Object): GUIController;
-    addColor(target: Object, propName:string): GUIController;
- */
-
-export interface GUIAutoAdd {
-  <T>(
-    value: T,
-    name: string,
-    min?: number,
-    max?: number,
-    step?: number
-  ): GUIController;
-  <T>(value: T, name: string, status: boolean): GUIController;
-  <T>(value: T, name: string, items: string[]): GUIController;
-  <T>(value: T, name: string, items: number[]): GUIController;
-  <T>(value: T, name: string, items: Object[]): GUIController;
+export interface AutoGUI extends Omit<GUI, 'add' | 'addColor'> {
+  add: {
+    <T>(
+      value: T,
+      name: string,
+      min?: number,
+      max?: number,
+      step?: number
+    ): GUIController;
+    <T>(value: T, name: string, status: boolean): GUIController;
+    <T>(value: T, name: string, items: string[]): GUIController;
+    <T>(value: T, name: string, items: number[]): GUIController;
+    <T>(value: T, name: string, items: Object[]): GUIController;
+  };
+  addColor: {
+    (value: string, name: string): GUIController;
+  };
+}
+export class AutoGUI {
+  constructor({
+    gui = new GUI(),
+    store = new Store(),
+  }: { gui?: GUI; store?: Record<string, unknown> } = {}) {
+    (['add', 'addColor'] as const).forEach(method => {
+      const original = gui[method];
+      gui[method] = <T>(defaultValue: T, name: string, ...args: any) => {
+        store[name] = defaultValue;
+        // @ts-expect-error
+        return original.call(gui, store, name, ...args);
+      };
+    });
+    return gui as AutoGUI;
+  }
 }
 
-export interface GUIAutoAddColor {
-  (value: string, name: string): GUIController;
-}
-
-export type AutoGUI = Omit<GUI, 'add' | 'addColor'> & {
-  add: GUIAutoAdd;
-  addColor: GUIAutoAddColor;
-};
-
-export type AddGuiArgs =
-  | []
-  | [number]
-  | [number, number]
-  | [number, number, number]
-  | [boolean]
-  | [string[]]
-  | [number[]]
-  | [Object];
-
-// const g = new GUI();
-// g.domElement.parentElement?.setAttribute('style', 'z-index: 1');
-// const store = streamProxy();
-// // export function gui<T>(name: string, defaultValue: T): flyd.Stream<T>;
-// export function gui<T>(
-//   name: string,
-//   defaultValue: T,
-//   ...args: AddGuiArgs
-// ): flyd.Stream<T> {
-//   store[name] = defaultValue;
-//   // @ts-expect-error
-//   g.add(store, name, ...args);
-//   return store.$[name] as flyd.Stream<T>;
-// }
-
-/**
- * A stream of changed gui values
- */
-export function guiChanged() {
-  const streams = Object.values(store.$);
-  return stream.combine<unknown, unknown>(
-    (...all) => {
-      const [self, changed] = all.splice(streams.length);
-      self(changed);
-    },
-    // @ts-expect-error
-    streams
-  );
-}
-
-export function isGUIController(x: unknown): x is GUIController {
-  return x instanceof controllers.Controller;
+export function isGUIController(x: any): x is GUIController {
+  return 'object' in x && 'property' in x;
 }

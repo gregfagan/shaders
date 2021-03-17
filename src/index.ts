@@ -6,24 +6,14 @@ import { glsl, uniform } from './tools/tools';
 import { quad } from './tools/quad';
 import { sdf } from './tools/sdf';
 import { glCoordinatesFromMouseEvent } from './tools/utils';
-import { GUI } from 'dat.gui';
-import { streamProxy, AutoGUI } from './tools/gui';
+import { AutoGUI } from './tools/gui';
+import { Store } from './tools/store';
 
 const regl = REGL();
 const { canvas } = regl._gl;
-const store = streamProxy();
-const autoAdd = (gui: GUI, target: Record<string, unknown>) => {
-  (['add', 'addColor'] as const).forEach(method => {
-    const original = gui[method];
-    gui[method] = <T>(defaultValue: T, name: string, ...args: any) => {
-      target[name] = defaultValue;
-      // @ts-expect-error
-      return original.call(gui, target, name, ...args);
-    };
-  });
-  return gui as AutoGUI;
-};
-const gui = autoAdd(new GUI(), store);
+
+const store = new Store();
+const gui = new AutoGUI({ store });
 
 // set up a clock which stops without focus
 const hasFocus = stream.merge(
