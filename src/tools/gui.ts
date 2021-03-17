@@ -1,5 +1,5 @@
-import { GUI, GUIController, controllers } from 'dat.gui';
-import { stream, log } from './stream';
+import { GUI, GUIController, controllers } from "dat.gui";
+import { stream, log } from "./stream";
 
 interface Store {
   $: Record<string, flyd.Stream<unknown>>;
@@ -15,7 +15,7 @@ export const streamProxy: () => Store = () =>
     {},
     {
       get(target, key: string) {
-        return key === '$' ? target : target[key]?.() ?? undefined;
+        return key === "$" ? target : target[key]?.() ?? undefined;
       },
       set(target, key: string, value) {
         const $ = target[key];
@@ -26,7 +26,7 @@ export const streamProxy: () => Store = () =>
         }
         return true;
       },
-    },
+    }
   ) as Store;
 
 /**
@@ -44,7 +44,7 @@ export interface GUIAutoAdd {
     name: string,
     min?: number,
     max?: number,
-    step?: number,
+    step?: number
   ): GUIController;
   <T>(value: T, name: string, status: boolean): GUIController;
   <T>(value: T, name: string, items: string[]): GUIController;
@@ -56,7 +56,7 @@ export interface GUIAutoAddColor {
   (value: string, name: string): GUIController;
 }
 
-export type AutoGUI = Omit<GUI, 'add' | 'addColor'> & {
+export type AutoGUI = Omit<GUI, "add" | "addColor"> & {
   add: GUIAutoAdd;
   addColor: GUIAutoAddColor;
 };
@@ -99,7 +99,7 @@ export function guiChanged() {
       self(changed);
     },
     // @ts-expect-error
-    streams,
+    streams
   );
 }
 

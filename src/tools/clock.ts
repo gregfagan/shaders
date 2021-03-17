@@ -1,5 +1,5 @@
-import R from 'ramda';
-import { stream, switchLatest, everyNth } from './stream';
+import R from "ramda";
+import { stream, switchLatest, everyNth } from "./stream";
 
 /**
  * Wall time updated by animation frame (60Hz)
@@ -9,12 +9,12 @@ export function clock() {
   const time = stream<number>();
   const clock = stream.immediate(
     stream.combine(
-      (time) => {
+      time => {
         id(requestAnimationFrame(time));
         return time();
       },
-      [time],
-    ),
+      [time]
+    )
   );
   stream.on(() => cancelAnimationFrame(id()), clock.end);
   return clock;
@@ -38,7 +38,7 @@ export function stopwatch(stopped: flyd.Stream<boolean>) {
         return clock().pipe(delta);
       }
     },
-    [stopped],
+    [stopped]
   );
   const deltaTime = switchLatest(clocks);
   return stream.scan(R.add, 0, deltaTime);
@@ -58,7 +58,7 @@ export function delta(s: flyd.Stream<number>) {
         last = current();
       }
     },
-    [s],
+    [s]
   );
 }
 

@@ -1,13 +1,13 @@
 import R from "ramda";
 import REGL, { Vec2 } from "regl";
-import { stream, event, log } from "./stream";
-import { stopwatch, seconds } from "./clock";
-import { glsl, uniform, ugui } from "./tools";
-import { quad } from "./quad";
-import { sdf } from "./sdf";
-import { glCoordinatesFromMouseEvent } from "./utils";
+import { stream, event, log } from "./tools/stream";
+import { stopwatch, seconds } from "./tools/clock";
+import { glsl, uniform, ugui } from "./tools/tools";
+import { quad } from "./tools/quad";
+import { sdf } from "./tools/sdf";
+import { glCoordinatesFromMouseEvent } from "./tools/utils";
 import { GUI } from "dat.gui";
-import { streamProxy, AutoGUI } from "./gui";
+import { streamProxy, AutoGUI } from "./tools/gui";
 
 const regl = REGL();
 const { canvas } = regl._gl;

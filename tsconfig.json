@@ -7,7 +7,6 @@
     "isolatedModules": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true
   }
 }
