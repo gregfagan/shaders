@@ -19,11 +19,11 @@
     "typescript": "^4.2.3"
   },
   "imports": {
-    "dat.gui": "/node_modules/dat.gui/build/dat.gui.js",
-    "flyd": "/node_modules/flyd/flyd.js",
-    "ramda": "/node_modules/ramda/dist/ramda.js",
-    "regl": "/node_modules/regl/dist/regl.js",
-    "/src/tools/stream": "/src/tools/stream/index.ts"
+    "dat.gui": "./node_modules/dat.gui/build/dat.gui.js",
+    "flyd": "./node_modules/flyd/flyd.js",
+    "ramda": "./node_modules/ramda/dist/ramda.js",
+    "regl": "./node_modules/regl/dist/regl.js",
+    "./src/tools/stream": "./src/tools/stream/index.ts"
   },
   "prettier": {
     "arrowParens": "avoid",
