@@ -1,4 +1,4 @@
-import { glsl } from './tools';
+import { glsl } from '../regl';
 
 const INFINITY = Number.MAX_VALUE.toString();
 

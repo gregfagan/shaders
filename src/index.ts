@@ -4,9 +4,9 @@ import { stream, log } from './tools/stream';
 import { stopwatch, seconds } from './tools/stream/time';
 import { Store } from './tools/stream/store';
 import { documentHasFocus, mousePosition } from './tools/stream/dom';
-import { glsl, uniform } from './tools/tools';
-import { quad } from './tools/quad';
-import { sdf } from './tools/sdf';
+import { glsl, uniform } from './tools/gl/regl';
+import { quad } from './tools/gl/config/quad';
+import { sdf } from './tools/gl/config/sdf';
 import { AutoGUI } from './tools/gui';
 
 const regl = REGL();
