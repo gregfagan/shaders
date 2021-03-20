@@ -4,7 +4,7 @@ import { GUIController } from 'dat.gui';
 import { head, last } from 'ramda';
 
 type NamedConfig = [string, DrawConfig];
-type GLSLTemplateParameter = string | DrawConfig | NamedConfig;
+type GLSLTemplateParameter = string | number | DrawConfig | NamedConfig;
 
 /**
  * Tagged template literal for writing fragment shaders.
@@ -42,7 +42,9 @@ export function glsl(
 
 /** Convert template parameters to NamedConfigs */
 function asNamedConfig(param: GLSLTemplateParameter): NamedConfig {
-  if (typeof param === 'string') {
+  if (typeof param === 'number') {
+    return [param.toString(), {}];
+  } else if (typeof param === 'string') {
     return [param, {}];
   } else if (typeof param === 'object' && !Array.isArray(param)) {
     return ['', param as REGL.DrawConfig];

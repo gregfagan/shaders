@@ -7,13 +7,16 @@ import { stream, switchLatest, everyNth, Stream } from '.';
 export function clock() {
   const id = stream<number>();
   const time = stream<number>();
-  const clock = stream.immediate(
-    stream.combine(
-      time => {
-        id(requestAnimationFrame(time));
-        return time();
-      },
-      [time]
+  const clock = stream.merge(
+    stream.of(0),
+    stream.immediate(
+      stream.combine(
+        time => {
+          id(requestAnimationFrame(time));
+          return time();
+        },
+        [time]
+      )
     )
   );
   stream.on(() => cancelAnimationFrame(id()), clock.end);
