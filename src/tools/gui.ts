@@ -1,4 +1,6 @@
 import { GUI, GUIController } from 'dat.gui';
+import { Vec3 } from 'regl';
+import { toGLColor } from './gl/color';
 import { Stream } from './stream';
 import { Store } from './stream/store';
 
@@ -10,24 +12,6 @@ import { Store } from './stream/store';
  * TODO: stronger types
  * TODO: instead of patching, maybe extend GUI and add new "auto" APIs?
  */
-export interface AutoAdd {
-  auto: {
-    <T>(
-      value: T,
-      name: string,
-      min?: number,
-      max?: number,
-      step?: number
-    ): GUIController;
-    <T>(value: T, name: string, status: boolean): GUIController;
-    <T>(value: T, name: string, items: string[]): GUIController;
-    <T>(value: T, name: string, items: number[]): GUIController;
-    <T>(value: T, name: string, items: Object[]): GUIController;
-  };
-  autoColor: {
-    (value: string, name: string): GUIController;
-  };
-}
 export class AutoGUI extends GUI {
   controllers: Record<string, GUIController> = {};
   constructor(public store: Record<string, unknown> = new Store()) {
@@ -52,6 +36,15 @@ export class AutoGUI extends GUI {
     this.controllers[name] = this.add(this.store, name, ...(args as any));
     const stream = streams[name] as Stream<T>;
     return stream;
+  }
+
+  autoColor(defaultValue: string, name: string): Stream<Vec3> {
+    const streams = this.store.$ as Record<string, Stream<unknown>>;
+    if (streams[name]) return streams[name] as Stream<Vec3>;
+    this.store[name] = defaultValue;
+    this.controllers[name] = this.addColor(this.store, name);
+    const stream = streams[name] as Stream<string>;
+    return stream.map(toGLColor);
   }
 }
 

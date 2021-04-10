@@ -4,7 +4,7 @@ import { glsl, uniform } from './tools/gl/regl';
 import { quad } from './tools/gl/config/quad';
 import { sdf } from './tools/gl/config/sdf';
 import { asteroidsConfig } from './game/asteroid';
-import { clock, gui } from './game/util';
+import { clock, gui, screenWrap } from './game/util';
 import { playerConfig } from './game/player';
 
 const regl = REGL();
@@ -26,16 +26,21 @@ void main() {
   vec2 p = st();
   float d = INFINITY;
 
-  for (float x = -2.; x <= 2.; x += 2.) {
-    for (float y = -2.; y <= 2.; y += 2.) {
-      d = opUnion(d, sdSpace(p - vec2(x, y)));
-    }
-  }
+  ${screenWrap(glsl`
+    d = opUnion(d, sdPlayer(p - pScreenWrap));
+  `)}
 
   vec3 sdVis = sdColor(d);
   d = step(0., d);
-  vec3 color = mix(vec3(0), vec3(1.), 1. - d);
+
+  vec3 color = vec3(0.);
+  
+  vec4 aColor = asteroidsColor(p);
+  color = mix(color, aColor.xyz, aColor.w);
+
+  color = mix(color, vec3(1.), 1. - d);
   color = mix(color, sdVis, ${uniform(gui.auto(0, 'u_vis', 0, 1))});
+  
 
   // Draw grey borders outside of the inscribed square
   color = mix(vec3(0.1), color, 

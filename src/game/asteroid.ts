@@ -1,8 +1,8 @@
 import { range } from 'ramda';
 import { vec2 } from 'gl-matrix';
-import { glsl } from '../tools/gl/regl';
+import { glsl, uniform } from '../tools/gl/regl';
 import { stream } from '../tools/stream';
-import { dt, wrap } from './util';
+import { dt, gui, screenWrap, wrap } from './util';
 import { Vec2 } from 'regl';
 
 type Asteroid = {
@@ -25,7 +25,7 @@ const randVec2 = (scale = 1) =>
 const randomAsteroid = (): Asteroid => ({
   p: vec2.fromValues(rand(), rand()),
   v: randVec2(Math.random() * 0.25),
-  size: Math.random() * 0.06 + 0.02,
+  size: Math.random(),
 });
 
 const move = (dt: number) => (a: Asteroid): Asteroid => ({
@@ -33,13 +33,11 @@ const move = (dt: number) => (a: Asteroid): Asteroid => ({
   p: vec2.add(vec2.create(), a.p, vec2.scale(vec2.create(), a.v, dt)).map(wrap),
 });
 
-const numAsteroids = 8;
+const numAsteroids = 10;
 const asteroidsRange = range(0, numAsteroids);
 
 const asteroids = stream.scan(
-  (asteroids, time) => {
-    return asteroids.map(move(time));
-  },
+  (asteroids, time) => asteroids.map(move(time)),
   asteroidsRange.map(randomAsteroid),
   dt
 );
@@ -59,15 +57,44 @@ export const asteroidsConfig = glsl`
   uniform Asteroid asteroids[${numAsteroids}];
 
   float sdAsteroid(vec2 p, Asteroid a) {
-    float d = sdCircle(p - a.p, a.size);
+    float d = sdCircle(p - a.p, a.size * ${uniform(
+      gui.auto(0.1, 'sizeScale', 0.1, 0.5)
+    )} +
+      ${uniform(gui.auto(0.2, 'sizeBase', 0.01, 0.2))});
     return d;
   }
 
   float sdAsteroids(vec2 p) {
     float d = INFINITY;
     for (int i = 0; i <= ${numAsteroids}; i+= 1) {
-      d = opUnion(d, sdAsteroid(p, asteroids[i]));
+      d = opSmoothUnion(d, sdAsteroid(p, asteroids[i]), ${uniform(
+        gui.auto(0.1, 'u_asteroidK', 0, 0.25),
+        'u_asteroidK'
+      )});
     }
     return d;
+  }
+
+  float sdSpaceAsteroids(vec2 p) {
+    float d = INFINITY;
+    ${screenWrap(glsl`
+      d = opSmoothUnion(d, sdAsteroids(p - pScreenWrap), u_asteroidK);
+    `)}
+    return d;
+  }
+
+  vec4 asteroidsColor(vec2 p) {
+    float d = sdSpaceAsteroids(p);
+    // d = step(0., d);
+    float f = ${uniform(gui.auto(0.05, 'f', 0, 0.05))};
+    float g = ${uniform(gui.auto(3, 'g', 0, 10))};
+    d = -d;
+    d = d / f;
+    d = floor(d);
+    d = d / g;
+    // d /= 0.01;
+    d = normalized(d);
+    vec3 color = ${uniform(gui.autoColor('#d79552', 'asteroidColor'))};
+    return vec4(color, d);
   }
 `;

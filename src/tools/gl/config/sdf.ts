@@ -4,7 +4,7 @@ import { glsl } from '../regl';
  * SDF drawing utilities
  */
 export const sdf = glsl`
-#define INFINITY ${Number.MAX_VALUE.toString()}
+#define INFINITY 3.4028237e37
 #define normalized(x) clamp(x, 0., 1.)
 
 float sdCircle(vec2 p, float r) {

@@ -3,6 +3,7 @@ import { documentHasFocus, keyboard } from '../tools/stream/dom';
 import { not } from 'ramda';
 import { log } from '../tools/stream';
 import { AutoGUI } from '../tools/gui';
+import { DrawConfig } from 'regl';
 
 export const gui = new AutoGUI();
 gui.domElement.parentElement!.style.zIndex = Number.MAX_SAFE_INTEGER.toString();
@@ -17,3 +18,12 @@ export const keys = keyboard(document);
 
 export const wrap = (value: number) =>
   value < -1 ? value + 2 : value > 1 ? value - 2 : value;
+
+export const screenWrap = ({ frag }: DrawConfig) => `
+  for (float x = -2.; x <= 2.; x += 2.) {
+    for (float y = -2.; y <= 2.; y += 2.) {
+      vec2 pScreenWrap = vec2(x, y);
+      ${frag as string}
+    }
+  }
+`;
