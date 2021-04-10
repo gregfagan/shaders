@@ -1,6 +1,6 @@
 import { equals, prop } from 'ramda';
 import { Vec2 } from 'regl';
-import { event, stream } from '.';
+import { event, Stream, stream } from '.';
 
 export const documentHasFocus = stream.merge(
   stream(document.hasFocus()),
@@ -9,6 +9,20 @@ export const documentHasFocus = stream.merge(
     .map(prop('type'))
     .map(equals('focus'))
 );
+
+export type KeyMap = Record<KeyboardEvent['key'], boolean>;
+export const keyboard = (el: EventTarget): Stream<KeyMap> =>
+  stream.scan(
+    (current, next: KeyboardEvent) => {
+      current[next.key] = next.type === 'keydown';
+      return current;
+    },
+    {} as KeyMap,
+    stream.merge(
+      event<KeyboardEvent>(el, 'keydown'),
+      event<KeyboardEvent>(el, 'keyup')
+    )
+  );
 
 interface MouseMoveElement extends EventTarget {
   width: number;

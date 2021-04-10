@@ -1,4 +1,5 @@
 import { GUI, GUIController } from 'dat.gui';
+import { Stream } from './stream';
 import { Store } from './stream/store';
 
 /**
@@ -9,8 +10,8 @@ import { Store } from './stream/store';
  * TODO: stronger types
  * TODO: instead of patching, maybe extend GUI and add new "auto" APIs?
  */
-export interface AutoGUI extends Omit<GUI, 'add' | 'addColor'> {
-  add: {
+export interface AutoAdd {
+  auto: {
     <T>(
       value: T,
       name: string,
@@ -23,24 +24,34 @@ export interface AutoGUI extends Omit<GUI, 'add' | 'addColor'> {
     <T>(value: T, name: string, items: number[]): GUIController;
     <T>(value: T, name: string, items: Object[]): GUIController;
   };
-  addColor: {
+  autoColor: {
     (value: string, name: string): GUIController;
   };
 }
-export class AutoGUI {
-  constructor({
-    gui = new GUI(),
-    store = new Store(),
-  }: { gui?: GUI; store?: Record<string, unknown> } = {}) {
-    (['add', 'addColor'] as const).forEach(method => {
-      const original = gui[method];
-      gui[method] = <T>(defaultValue: T, name: string, ...args: any) => {
-        store[name] = defaultValue;
-        // @ts-expect-error
-        return original.call(gui, store, name, ...args);
-      };
-    });
-    return gui as AutoGUI;
+export class AutoGUI extends GUI {
+  controllers: Record<string, GUIController> = {};
+  constructor(public store: Record<string, unknown> = new Store()) {
+    super();
+  }
+
+  auto<T>(
+    value: T,
+    name: string,
+    min?: number,
+    max?: number,
+    step?: number
+  ): Stream<T>;
+  auto<T>(value: T, name: string, status: boolean): Stream<T>;
+  auto<T>(value: T, name: string, items: string[]): Stream<T>;
+  auto<T>(value: T, name: string, items: number[]): Stream<T>;
+  auto<T>(value: T, name: string, items: Object[]): Stream<T>;
+  auto<T>(defaultValue: T, name: string, ...args: unknown[]) {
+    const streams = this.store.$ as Record<string, Stream<unknown>>;
+    if (streams[name]) return streams[name];
+    this.store[name] = defaultValue;
+    this.controllers[name] = this.add(this.store, name, ...(args as any));
+    const stream = streams[name] as Stream<T>;
+    return stream;
   }
 }
 

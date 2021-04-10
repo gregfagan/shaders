@@ -1,9 +1,7 @@
 import R from 'ramda';
 import flyd from 'flyd';
-
-export import Stream = flyd.Stream;
-export type StreamAPI = flyd.Static &
-  flyd.CreateStream & { of: flyd.CreateStream };
+import type { Stream, StreamAPI } from './types';
+export * from './types';
 
 /**
  * Better flyd API by combining CreateStream with static, like mithril

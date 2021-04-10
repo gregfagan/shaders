@@ -1,0 +1,19 @@
+import { stopwatch, delta } from '../tools/stream/time';
+import { documentHasFocus, keyboard } from '../tools/stream/dom';
+import { not } from 'ramda';
+import { log } from '../tools/stream';
+import { AutoGUI } from '../tools/gui';
+
+export const gui = new AutoGUI();
+gui.domElement.parentElement!.style.zIndex = Number.MAX_SAFE_INTEGER.toString();
+
+// set up a clock which stops without focus
+const pause = documentHasFocus.map(not).map(log('pause'));
+export const clock = stopwatch(pause);
+export const dt = delta(clock).map(dt => dt / 1000);
+
+// track input
+export const keys = keyboard(document);
+
+export const wrap = (value: number) =>
+  value < -1 ? value + 2 : value > 1 ? value - 2 : value;

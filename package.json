@@ -13,6 +13,7 @@
     "@types/ramda": "^0.27.38",
     "dat.gui": "^0.7.7",
     "flyd": "^0.2.8",
+    "gl-matrix": "^3.3.0",
     "ramda": "^0.27.1",
     "regl": "^2.1.0",
     "systemjs": "^6.3.3",
@@ -21,6 +22,7 @@
   "imports": {
     "dat.gui": "./node_modules/dat.gui/build/dat.gui.js",
     "flyd": "./node_modules/flyd/flyd.js",
+    "gl-matrix": "./node_modules/gl-matrix/gl-matrix.js",
     "ramda": "./node_modules/ramda/dist/ramda.js",
     "regl": "./node_modules/regl/dist/regl.js",
     "./src/tools/stream": "./src/tools/stream/index.ts"
