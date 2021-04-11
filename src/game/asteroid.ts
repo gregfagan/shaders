@@ -1,9 +1,11 @@
 import { range } from 'ramda';
 import { vec2 } from 'gl-matrix';
-import { glsl, uniform } from '../tools/gl/regl';
-import { stream } from '../tools/stream';
-import { dt, gui, screenWrap, wrap } from './util';
+import { glsl, uniform } from '../lib/gl/regl';
+import { stream } from '../lib/stream';
+import { dt, gui as baseGui, screenWrap, wrap } from './util';
 import { Vec2 } from 'regl';
+
+const gui = baseGui.addFolder('asteroid');
 
 type Asteroid = {
   p: Vec2;
@@ -68,8 +70,7 @@ export const asteroidsConfig = glsl`
     float d = INFINITY;
     for (int i = 0; i <= ${numAsteroids}; i+= 1) {
       d = opSmoothUnion(d, sdAsteroid(p, asteroids[i]), ${uniform(
-        gui.auto(0.1, 'u_asteroidK', 0, 0.25),
-        'u_asteroidK'
+        gui.auto(0.1, 'u_asteroidK', 0, 0.25)
       )});
     }
     return d;
@@ -94,7 +95,7 @@ export const asteroidsConfig = glsl`
     d = d / g;
     // d /= 0.01;
     d = normalized(d);
-    vec3 color = ${uniform(gui.autoColor('#d79552', 'asteroidColor'))};
+    vec3 color = ${uniform(gui.auto('#d79552', 'asteroidColor'))};
     return vec4(color, d);
   }
 `;

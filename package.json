@@ -25,7 +25,7 @@
     "gl-matrix": "./node_modules/gl-matrix/gl-matrix.js",
     "ramda": "./node_modules/ramda/dist/ramda.js",
     "regl": "./node_modules/regl/dist/regl.js",
-    "./src/tools/stream": "./src/tools/stream/index.ts"
+    "./src/lib/stream": "./src/lib/stream/index.ts"
   },
   "prettier": {
     "arrowParens": "avoid",

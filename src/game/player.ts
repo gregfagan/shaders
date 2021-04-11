@@ -1,9 +1,11 @@
 import R, { add, clamp, multiply, zipWith } from 'ramda';
 import { mat2, vec2 } from 'gl-matrix';
-import { dt, gui, keys, wrap } from './util';
-import { stream } from '../tools/stream';
-import { glsl, uniform } from '../tools/gl/regl';
+import { dt, gui as baseGui, keys, wrap } from './util';
+import { stream } from '../lib/stream';
+import { glsl, uniform } from '../lib/gl/regl';
 import { Vec2 } from 'regl';
+
+const gui = baseGui.addFolder('player');
 
 // movement
 const vector = keys.map(

@@ -1,8 +1,8 @@
-import { stopwatch, delta } from '../tools/stream/time';
-import { documentHasFocus, keyboard } from '../tools/stream/dom';
+import { stopwatch, delta } from '../lib/stream/time';
+import { documentHasFocus, keyboard } from '../lib/stream/dom';
 import { not } from 'ramda';
-import { log } from '../tools/stream';
-import { AutoGUI } from '../tools/gui';
+import { log } from '../lib/stream';
+import { AutoGUI } from '../lib/gui';
 import { DrawConfig } from 'regl';
 
 export const gui = new AutoGUI();

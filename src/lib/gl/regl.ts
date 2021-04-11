@@ -1,7 +1,7 @@
 import REGL, { DrawConfig } from 'regl';
-import { isGUIController } from '../gui';
-import { GUIController } from 'dat.gui';
+import { hasGUIController } from '../gui';
 import { head, last } from 'ramda';
+import { isColor, toGLColor } from './color';
 
 type NamedConfig = [string, DrawConfig];
 type GLSLTemplateParameter = string | number | DrawConfig | NamedConfig;
@@ -89,18 +89,16 @@ export function reglMerge<T extends REGL.DrawConfig>(a: T, b: T) {
  *    give reasonable defaults. convert strings to colors.
  */
 export function uniform<T extends keyof Value>(
-  value: (() => Value[T]) | GUIController,
+  value: (() => Value[T]) | (() => string),
   nameOrType: string = generateName(),
   type?: T
 ): NamedConfig {
-  const name = isGUIController(value)
-    ? value.property
+  const name = hasGUIController(value)
+    ? value.controller.property
     : isType(nameOrType)
     ? generateName()
     : nameOrType;
-  const getValue = isGUIController(value)
-    ? () => (value.object as Record<string, unknown>)[name]
-    : () => value();
+  const getValue = isColor(value()) ? () => toGLColor(value()) : () => value();
   const finalType =
     type ?? (isType(nameOrType) ? nameOrType : inferType(getValue()));
   return [
@@ -114,7 +112,7 @@ export function uniform<T extends keyof Value>(
 
 /** name generator for anonymous uniforms */
 let nameId = 1;
-const generateName = () => `u_${nameId++}`;
+export const generateName = () => `u_${nameId++}`;
 
 /** Map GLSL types to JS types */
 type Value = {
