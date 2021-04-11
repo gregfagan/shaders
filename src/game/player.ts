@@ -1,6 +1,6 @@
 import R, { add, clamp, multiply, zipWith } from 'ramda';
 import { mat2, vec2 } from 'gl-matrix';
-import { dt, gui as baseGui, keys, wrap } from './util';
+import { dt, gui as baseGui, keys, screenWrap, wrap } from './util';
 import { stream } from '../lib/stream';
 import { glsl, uniform } from '../lib/gl/regl';
 import { Vec2 } from 'regl';
@@ -61,12 +61,25 @@ export const playerConfig = glsl`
 
   float sdPlayer(vec2 p) {
     vec2 pos = ${uniform(position)};
-    vec2 center = vec2(0, 0.075);
+    vec2 center = vec2(0, 0.06);
     vec2 player = p - center - pos;
     player = rotate2d(${uniform(angle)}) * player;
     player += center + pos;
-    float d = sdTriangleIsosceles(player - pos, vec2(0.05, 0.1));
+    float d = sdTriangleIsosceles(player - pos, vec2(0.035, 0.085)) - 0.015;
 
     return d;
+  }
+
+  float sdSpacePlayer(vec2 p) {
+    float d = INFINITY;
+    ${screenWrap(glsl`
+      d = opUnion(d, sdPlayer(p - pScreenWrap));
+    `)}
+    return d;
+  }
+
+  vec4 playerColor(vec2 p) {
+    float d = step(sdSpacePlayer(p), 0.);
+    return vec4(vec3(1), d);
   }
 `;

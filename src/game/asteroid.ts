@@ -86,16 +86,15 @@ export const asteroidsConfig = glsl`
 
   vec4 asteroidsColor(vec2 p) {
     float d = sdSpaceAsteroids(p);
-    // d = step(0., d);
-    float f = ${uniform(gui.auto(0.05, 'f', 0, 0.05))};
-    float g = ${uniform(gui.auto(3, 'g', 0, 10))};
     d = -d;
-    d = d / f;
-    d = floor(d);
-    d = d / g;
-    // d /= 0.01;
+    d = d * ${uniform(gui.auto(30, 'bandEffectScaleUp', 1, 50))};
+    d = floor(d) + 1.;
+    d = d / ${uniform(gui.auto(3, 'bandEffectScaleDown', 1, 10))};
     d = normalized(d);
-    vec3 color = ${uniform(gui.auto('#d79552', 'asteroidColor'))};
-    return vec4(color, d);
+
+    float stepD = step(sdSpaceAsteroids(p), 0.);
+    float alpha = mix(d, stepD, ${uniform(gui.auto(0, 'bandOrStep', 0, 1))});
+    
+    return vec4(${uniform(gui.auto('#d79552', 'asteroidColor'))}, alpha);
   }
 `;

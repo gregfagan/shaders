@@ -9,6 +9,10 @@ node_modules/dat.gui/*
 node_modules/flyd/*
 !node_modules/flyd/flyd.js
 
+!node_modules/gl-matrix/
+node_modules/gl-matrix/*
+!node_modules/gl-matrix/gl-matrix.js
+
 !node_modules/ramda/
 node_modules/ramda/*
 !node_modules/ramda/dist/
