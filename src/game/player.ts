@@ -1,9 +1,9 @@
-import R, { add, clamp, multiply, zipWith } from 'ramda';
-import { mat2, vec2 } from 'gl-matrix';
 import { dt, gui as baseGui, keys, screenWrap, wrap } from './util';
 import { stream } from '../lib/stream';
 import { glsl, uniform } from '../lib/gl/regl';
 import { Vec2 } from 'regl';
+import { flow } from 'fp-ts/function';
+import { mat2, vec2 } from '../lib/math';
 
 const gui = baseGui.addFolder('player');
 
@@ -16,7 +16,7 @@ const vector = keys.map(
 const angle = stream.scan(
   (angle, dt) => {
     const [input] = vector();
-    return angle - input * gui.auto(1, 'rotate', 0.1, 2)() * Math.PI * dt;
+    return angle - input * gui.auto(1.5, 'rotate', 0.1, 2)() * Math.PI * dt;
   },
   0,
   stream.combine<number, number>(dt => (vector()[0] !== 0 ? dt() : undefined), [
@@ -24,34 +24,28 @@ const angle = stream.scan(
   ])
 );
 
-const dir = vec2.create();
-const rot = mat2.create();
-const down = vec2.fromValues(0, -1);
-stream.on(() => {
-  mat2.fromRotation(rot, angle());
-  vec2.transformMat2(dir, down, rot);
-}, angle);
+const down: Vec2 = [0, -1];
+const direction = angle.map(
+  flow(mat2.fromRotation, m => vec2.transformMat2(down, m))
+);
 
 const acceleration = dt.map(
   dt =>
-    dir.map(
-      multiply(vector()[1] * gui.auto(0.05, 'acceleration', 0.025, 0.1)() * dt)
-    ) as vec2
+    direction().map(
+      x => x * (vector()[1] * gui.auto(0.05, 'acceleration', 0.025, 0.1)() * dt)
+    ) as Vec2
 );
 
-const maxSpeed = gui.auto(0.025, 'maxSpeed', 0.01, 0.1);
+const maxSpeed = gui.auto(0.02, 'maxSpeed', 0.005, 0.05);
+const clampSpeed = maxSpeed.map(vec2.clampLength);
 
-const velocity = stream.scan<Vec2, Vec2>(
-  R.pipe(zipWith(add), R.map(clamp(-maxSpeed(), maxSpeed()))),
+const velocity = stream.scan(
+  flow(vec2.add, v => clampSpeed()(v)),
   [0, 0],
   acceleration
 );
 
-const position = stream.scan<Vec2, Vec2>(
-  R.pipe(zipWith(add), R.map(wrap)),
-  [0, 0],
-  velocity
-);
+const position = stream.scan(flow(vec2.add, vec2.map(wrap)), [0, 0], velocity);
 
 export const playerConfig = glsl`
   mat2 rotate2d(float _angle){

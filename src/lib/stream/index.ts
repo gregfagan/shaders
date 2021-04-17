@@ -1,5 +1,5 @@
-import R from 'ramda';
 import flyd from 'flyd';
+import { add, equals, modulo, partial, pipe, tap, __ } from 'ramda';
 import type { Stream, StreamAPI } from './types';
 export * from './types';
 
@@ -10,7 +10,7 @@ export const stream = flyd.stream.bind({}) as StreamAPI;
 Object.assign(stream, { ...flyd, of: stream });
 
 export const log = <T>(...args: any[]) =>
-  R.tap<T>(R.partial<any>(console.log, args));
+  tap<T>(partial<any>(console.log, args));
 
 export const sample = <T>(what: Stream<T>, when: Stream<any>) =>
   stream.combine(() => what(), [when]);
@@ -45,8 +45,8 @@ export const everyNth = (n: number) => <T>(
   return sample(
     s,
     stream
-      .scan(R.add(1), 0, s)
-      .map(R.pipe(R.modulo(R.__, n), R.equals(0)))
+      .scan(add(1), 0, s)
+      .map(pipe(modulo(__, n), equals(0)))
       .pipe(whenTruthy)
   );
 };

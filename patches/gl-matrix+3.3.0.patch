@@ -1,0 +1,111 @@
+diff --git a/node_modules/gl-matrix/index.d.ts b/node_modules/gl-matrix/index.d.ts
+index 183a676..2f49a93 100644
+--- a/node_modules/gl-matrix/index.d.ts
++++ b/node_modules/gl-matrix/index.d.ts
+@@ -3,22 +3,21 @@ declare module "gl-matrix" {
+ // prettier-ignore
+ export type mat2 =
+   | [number, number, 
+-     number, number]
+-  | Float32Array;
++     number, number];
+ 
+ // prettier-ignore
+ export type mat2d =
+   | [number, number, 
+      number, number, 
+      number, number]
+-  | Float32Array;
++  ;
+ 
+ // prettier-ignore
+ export type mat3 =
+   | [number, number, number, 
+      number, number, number, 
+      number, number, number]
+-  | Float32Array;
++  ;
+ 
+ // prettier-ignore
+ export type mat4 =
+@@ -26,19 +25,19 @@ export type mat4 =
+      number, number, number, number,
+      number, number, number, number,
+      number, number, number, number]
+-  | Float32Array;
++  ;
+ 
+-export type quat = [number, number, number, number] | Float32Array;
++export type quat = [number, number, number, number] ;
+ 
+ // prettier-ignore
+ export type quat2 =
+   | [number, number, number, number, 
+     number, number, number, number]
+-  | Float32Array;
++  ;
+ 
+-export type vec2 = [number, number] | Float32Array;
+-export type vec3 = [number, number, number] | Float32Array;
+-export type vec4 = [number, number, number, number] | Float32Array;
++export type vec2 = [number, number] ;
++export type vec3 = [number, number, number] ;
++export type vec4 = [number, number, number, number] ;
+ 
+ // prettier-ignore
+ export type ReadonlyMat2 =
+@@ -46,7 +45,7 @@ export type ReadonlyMat2 =
+       number, number,
+       number, number
+     ]
+-  | Float32Array;
++  ;
+ 
+ // prettier-ignore
+ export type ReadonlyMat2d =
+@@ -55,7 +54,7 @@ export type ReadonlyMat2d =
+       number, number,
+       number, number
+     ]
+-  | Float32Array;
++  ;
+ 
+ // prettier-ignore
+ export type ReadonlyMat3 =
+@@ -64,7 +63,7 @@ export type ReadonlyMat3 =
+       number, number, number,
+       number, number, number
+     ]
+-  | Float32Array;
++  ;
+ 
+ // prettier-ignore
+ export type ReadonlyMat4 =
+@@ -74,21 +73,21 @@ export type ReadonlyMat4 =
+       number, number, number, number,
+       number, number, number, number
+     ]
+-  | Float32Array;
++  ;
+ 
+ export type ReadonlyQuat =
+   | readonly [number, number, number, number]
+-  | Float32Array;
++  ;
+ 
+ export type ReadonlyQuat2 =
+   | readonly [number, number, number, number, number, number, number, number]
+-  | Float32Array;
++  ;
+ 
+-export type ReadonlyVec2 = readonly [number, number] | Float32Array;
+-export type ReadonlyVec3 = readonly [number, number, number] | Float32Array;
++export type ReadonlyVec2 = readonly [number, number] ;
++export type ReadonlyVec3 = readonly [number, number, number] ;
+ export type ReadonlyVec4 =
+   | readonly [number, number, number, number]
+-  | Float32Array;
++  ;
+ 
+ export module glMatrix {
+     /**

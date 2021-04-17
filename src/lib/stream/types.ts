@@ -1,4 +1,4 @@
-export import Stream = flyd.Stream;
+export type Stream<T> = flyd.Stream<T>;
 export type StreamAPI = Omit<flyd.Static, 'combine'> & {
   combine: Combine;
 } & flyd.CreateStream & { of: flyd.CreateStream };

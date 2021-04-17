@@ -1,4 +1,4 @@
-import R from 'ramda';
+import { add } from 'ramda';
 import { stream, switchLatest, everyNth, Stream } from '.';
 
 /**
@@ -44,7 +44,7 @@ export function stopwatch(stopped: Stream<boolean>) {
     [stopped]
   );
   const deltaTime = switchLatest(clocks);
-  return stream.scan(R.add, 0, deltaTime);
+  return stream.scan(add, 0, deltaTime);
 }
 
 /**

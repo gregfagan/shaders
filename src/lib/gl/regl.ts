@@ -2,6 +2,7 @@ import REGL, { DrawConfig } from 'regl';
 import { hasGUIController } from '../gui';
 import { head, last } from 'ramda';
 import { isColor, toGLColor } from './color';
+import { ReadonlyVec2, ReadonlyVec3, ReadonlyVec4 } from 'gl-matrix';
 
 type NamedConfig = [string, DrawConfig];
 type GLSLTemplateParameter = string | number | DrawConfig | NamedConfig;
@@ -119,9 +120,9 @@ type Value = {
   float: number;
   int: number;
   bool: boolean;
-  vec2: REGL.Vec2;
-  vec3: REGL.Vec3;
-  vec4: REGL.Vec4;
+  vec2: REGL.Vec2 | ReadonlyVec2;
+  vec3: REGL.Vec3 | ReadonlyVec3;
+  vec4: REGL.Vec4 | ReadonlyVec4;
 };
 
 const type: (keyof Value)[] = ['float', 'int', 'bool', 'vec2', 'vec3', 'vec4'];

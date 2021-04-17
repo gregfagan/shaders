@@ -4,32 +4,31 @@
   "description": "building my graphics tools",
   "main": "none",
   "scripts": {
-    "start": "npx @web/dev-server --watch"
+    "start": "vite",
+    "build": "vite build",
+    "postinstall": "patch-package",
+    "serve": "vite preview"
   },
   "author": "Greg Fagan",
   "license": "UNLICENSED",
   "dependencies": {
-    "@types/dat.gui": "^0.7.6",
-    "@types/ramda": "^0.27.38",
     "dat.gui": "^0.7.7",
     "flyd": "^0.2.8",
+    "fp-ts": "^2.10.2",
     "gl-matrix": "^3.3.0",
     "ramda": "^0.27.1",
-    "regl": "^2.1.0",
-    "systemjs": "^6.3.3",
-    "typescript": "^4.2.3"
-  },
-  "imports": {
-    "dat.gui": "./node_modules/dat.gui/build/dat.gui.js",
-    "flyd": "./node_modules/flyd/flyd.js",
-    "gl-matrix": "./node_modules/gl-matrix/gl-matrix.js",
-    "ramda": "./node_modules/ramda/dist/ramda.js",
-    "regl": "./node_modules/regl/dist/regl.js",
-    "./src/lib/stream": "./src/lib/stream/index.ts"
+    "regl": "^2.1.0"
   },
   "prettier": {
     "arrowParens": "avoid",
     "singleQuote": true,
     "proseWrap": "always"
+  },
+  "devDependencies": {
+    "@types/dat.gui": "^0.7.6",
+    "@types/ramda": "^0.27.40",
+    "patch-package": "^6.4.7",
+    "typescript": "^4.2.4",
+    "vite": "^2.1.5"
   }
 }
