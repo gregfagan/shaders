@@ -1,9 +1,10 @@
 import { range } from 'ramda';
-import { vec2 } from 'gl-matrix';
 import { glsl, uniform } from '../lib/gl/regl';
 import { stream } from '../lib/stream';
 import { dt, gui as baseGui, screenWrap, wrap } from './util';
 import { Vec2 } from 'regl';
+import { vec2 } from '../lib/math';
+import { pipe } from 'fp-ts/lib/function';
 
 const gui = baseGui.addFolder('asteroid');
 
@@ -18,21 +19,17 @@ const rand = (max = 1) => (Math.random() * 2 - 1) * max;
 
 /** normalized then scaled vec2 */
 const randVec2 = (scale = 1) =>
-  vec2.scale(
-    vec2.create(),
-    vec2.normalize(vec2.create(), vec2.fromValues(rand(), rand())),
-    scale
-  );
+  vec2.scale(vec2.normalize([rand(), rand()]), scale);
 
 const randomAsteroid = (): Asteroid => ({
-  p: vec2.fromValues(rand(), rand()),
+  p: [rand(), rand()],
   v: randVec2(Math.random() * 0.25),
   size: Math.random(),
 });
 
-const move = (dt: number) => (a: Asteroid): Asteroid => ({
+const move = (dt: number) => ({ p, ...a }: Asteroid): Asteroid => ({
   ...a,
-  p: vec2.add(vec2.create(), a.p, vec2.scale(vec2.create(), a.v, dt)).map(wrap),
+  p: pipe(p, p => vec2.add(p, vec2.scale(a.v, dt)), vec2.map(wrap)),
 });
 
 const numAsteroids = 10;
