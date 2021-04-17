@@ -18,12 +18,16 @@ type Asteroid = {
 const rand = (max = 1) => (Math.random() * 2 - 1) * max;
 
 /** normalized then scaled vec2 */
-const randVec2 = (scale = 1) =>
-  vec2.scale(vec2.normalize([rand(), rand()]), scale);
+const randDirection = (scale = 1) =>
+  pipe(
+    Math.random() * Math.PI * 2,
+    a => vec2.of(Math.sin(a), Math.cos(a)),
+    v => vec2.scale(v, scale)
+  );
 
 const randomAsteroid = (): Asteroid => ({
-  p: [rand(), rand()],
-  v: randVec2(Math.random() * 0.25),
+  p: randDirection(Math.random() * 0.25 + 0.75),
+  v: randDirection(Math.random() * 0.25),
   size: Math.random(),
 });
 
