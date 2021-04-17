@@ -73,7 +73,7 @@ export const playerConfig = glsl`
   }
 
   vec4 playerColor(vec2 p) {
-    float d = step(sdSpacePlayer(p), 0.);
+    float d = aastep(sdSpacePlayer(p), 0.);
     return vec4(vec3(1), d);
   }
 `;
