@@ -2,7 +2,7 @@ import type REGL from 'regl';
 import { glsl } from '../regl';
 
 const vert = `
-precision mediump float;
+precision highp float;
 attribute vec2 position;
 varying vec2 uv;
 void main() {
@@ -50,7 +50,7 @@ ${{
   },
 }}
 
-precision mediump float;
+precision highp float;
 
 uniform vec2 viewport;
 varying vec2 uv;
