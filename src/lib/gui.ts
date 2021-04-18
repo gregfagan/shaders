@@ -52,3 +52,8 @@ export class AutoGUI extends GUI {
 export function hasGUIController(x: any): x is { controller: GUIController } {
   return 'controller' in x;
 }
+
+export const setControllerVisible = (c: GUIController, isVisible = true) => {
+  // @ts-expect-error
+  c.__li.style.display = isVisible ? '' : 'none';
+};

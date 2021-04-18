@@ -3,26 +3,19 @@ import Stats from 'stats.js';
 import { stream } from './lib/stream';
 import { clock, gui } from './game/util';
 import { draw as game } from './game';
-import { pixellate } from './lib/gl/pixellate';
+import { createRenderScale } from './lib/gl/renderScale';
 
 const regl = REGL();
 const stats = new Stats();
 stats.showPanel(0);
 document.body.appendChild(stats.dom);
 
-const shouldPixellate = gui.auto(true, 'pixellate');
-
-const render = regl(game);
-const renderPixellated = pixellate(game, 256)(regl);
+const renderer = createRenderScale(regl, gui, game);
 
 stream.on(() => {
   regl.poll();
 
-  if (shouldPixellate()) {
-    renderPixellated();
-  } else {
-    render();
-  }
+  renderer()();
 
   stats.update();
 }, clock);
