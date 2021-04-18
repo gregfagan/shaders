@@ -146,11 +146,11 @@ void main() {
 
   gl_FragColor = vec4(color, 1.);
 }
-`,_e=O(),Oe=new j;Oe.showPanel(0),document.body.appendChild(Oe.dom);const je=(Me=Se,qe=256,e=>{const r=e.framebuffer({color:e.texture({min:"linear",mag:"nearest",width:qe,height:qe,wrap:"repeat"})}),o=e(a({framebuffer:r},Me)),t=e(G`
+`,_e=O(),Oe=new j;Oe.showPanel(0),document.body.appendChild(Oe.dom);const je=R.auto(!0,"pixellate"),Me=_e(Se),qe=(ze=Se,Ee=256,e=>{const r=e.framebuffer({color:e.texture({min:"linear",mag:"nearest",width:Ee,height:Ee,wrap:"repeat"})}),o=e(a({framebuffer:r},ze)),t=e(G`
     ${re}
     ${{uniforms:{source:r}}}
     uniform sampler2D source;
     void main() {
       gl_FragColor = vec4(texture2D(source, st() / 2. + 0.5).xyz, 1.);
     }
-  `);return()=>{o(),t()}})(_e);var Me,qe;M.on((()=>{_e.poll(),je(),Oe.update()}),L);
+  `);return()=>{o(),t()}})(_e);var ze,Ee;M.on((()=>{_e.poll(),je()?qe():Me(),Oe.update()}),L);
