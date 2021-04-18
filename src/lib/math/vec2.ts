@@ -3,7 +3,7 @@ import { purifyWith } from './purify';
 
 const purify = purifyWith(vec2.create);
 
-export const of = vec2.fromValues;
+export const of = (x: number, y = x) => vec2.fromValues(x, y);
 export const add = purify(vec2.add);
 export const subtract = purify(vec2.subtract);
 export const multiply = purify(vec2.multiply);

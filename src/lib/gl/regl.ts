@@ -67,8 +67,10 @@ export function reglMerge<T extends REGL.DrawConfig>(a: T, b: T) {
     (result: any, [key, value]) => {
       result[key] =
         typeof value === 'string'
-          ? ((result[key] as string) ?? '') + '\n' + value
-          : { ...result[key], ...value };
+          ? (((result[key] as string) ?? '') + '\n' + value).trim()
+          : typeof value === 'object' && value !== null
+          ? { ...result[key], ...value }
+          : value;
       return result;
     },
     { ...a }

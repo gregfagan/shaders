@@ -1,9 +1,11 @@
 import { dt, gui as baseGui, keys, screenWrap, wrap } from './util';
 import { stream } from '../lib/stream';
 import { glsl, uniform } from '../lib/gl/regl';
-import { Vec2 } from 'regl';
+import REGL, { Vec2 } from 'regl';
 import { flow } from 'fp-ts/function';
 import { mat2, vec2 } from '../lib/math';
+import { pipe } from 'fp-ts/lib/function';
+import { ReadonlyVec2 } from 'gl-matrix';
 
 const gui = baseGui.addFolder('player');
 
@@ -45,9 +47,13 @@ const velocity = stream.scan(
   acceleration
 );
 
-const position = stream.scan(flow(vec2.add, vec2.map(wrap)), [0, 0], velocity);
+export const position = stream.scan(
+  flow(vec2.add, vec2.map(wrap)),
+  [0, 0],
+  velocity
+);
 
-export const playerConfig = glsl`
+export const draw = glsl`
   mat2 rotate2d(float _angle){
     return mat2(cos(_angle),-sin(_angle),
                 sin(_angle),cos(_angle));
@@ -55,11 +61,13 @@ export const playerConfig = glsl`
 
   float sdPlayer(vec2 p) {
     vec2 pos = ${uniform(position)};
-    vec2 center = vec2(0, 0.06);
-    vec2 player = p - center - pos;
+    vec2 center = vec2(0, 0.05);
+    vec2 size = vec2(0.035, 0.085);
+    float roundedness = 0.015;
+    vec2 player = p - pos;
     player = rotate2d(${uniform(angle)}) * player;
     player += center + pos;
-    float d = sdTriangleIsosceles(player - pos, vec2(0.035, 0.085)) - 0.015;
+    float d = sdTriangleIsosceles(player - pos, size) - roundedness;
 
     return d;
   }
@@ -77,3 +85,28 @@ export const playerConfig = glsl`
     return vec4(vec3(1), d);
   }
 `;
+
+export const scissor: REGL.DrawConfig = {
+  scissor: {
+    enable: true,
+    box: ({ viewportWidth, viewportHeight }: REGL.DefaultContext) => {
+      const viewport = vec2.of(viewportWidth, viewportHeight);
+      const minC = Math.min(...viewport);
+
+      // st => viewport coords
+      const coord = (p: ReadonlyVec2): Vec2 =>
+        pipe(
+          p,
+          p => vec2.scale(p, minC / 2),
+          p => vec2.add(p, vec2.scale(viewport, 0.5))
+        );
+
+      const offset = 0.1 * minC;
+      const [x, y] = pipe(position(), coord, p =>
+        vec2.sub(p, vec2.of(offset / 2))
+      );
+      const v = { x, y, width: offset, height: offset };
+      return v;
+    },
+  },
+};
