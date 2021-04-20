@@ -14,6 +14,8 @@ export type KeyMap = Record<KeyboardEvent['key'], boolean>;
 export const keyboard = (el: EventTarget): Stream<KeyMap> =>
   stream.scan(
     (current, next: KeyboardEvent) => {
+      next.preventDefault();
+      next.stopPropagation();
       current[next.key] = next.type === 'keydown';
       return current;
     },
@@ -40,3 +42,25 @@ const glCoordinatesFromMouseEvent = (e: MouseEvent): Vec2 => [
   ((e.target as HTMLElement).clientHeight - e.clientY) *
     window.devicePixelRatio,
 ];
+
+export const pointers = (el: EventTarget) =>
+  stream
+    .merge(
+      event<PointerEvent>(el, 'pointerdown'),
+      event<PointerEvent>(el, 'pointerup')
+    )
+    .map(e => {
+      e.preventDefault();
+      e.stopPropagation();
+      return {
+        id: e.pointerId,
+        type: e.type,
+        x: e.clientX,
+        y: e.clientY,
+        container: isElement(e.target)
+          ? e.target.getBoundingClientRect()
+          : new DOMRect(),
+      };
+    });
+
+const isElement = (e: any): e is Element => e instanceof Element;

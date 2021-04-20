@@ -1,4 +1,4 @@
-import { dt, gui as baseGui, keys, screenWrap, wrap } from './util';
+import { dt, gui as baseGui, screenWrap, wrap } from './util';
 import { stream } from '../lib/stream';
 import { glsl, uniform } from '../lib/gl/regl';
 import REGL, { Vec2 } from 'regl';
@@ -6,13 +6,14 @@ import { flow } from 'fp-ts/function';
 import { mat2, vec2 } from '../lib/math';
 import { pipe } from 'fp-ts/lib/function';
 import { ReadonlyVec2 } from 'gl-matrix';
+import { controller } from './controller';
 
 const gui = baseGui.addFolder('player');
 
 // movement
-const vector = keys.map(
-  ({ a: left, d: right, w: up, s: down }) =>
-    [right ? 1 : left ? -1 : 0, up ? 1 : down ? 0 : 0] as Vec2
+const vector = controller.map(
+  ({ left, right, thrust }) =>
+    [right ? 1 : left ? -1 : 0, thrust ? 1 : 0] as Vec2
 );
 
 const angle = stream.scan(
@@ -20,7 +21,7 @@ const angle = stream.scan(
     const [input] = vector();
     return angle - input * gui.auto(1.5, 'rotate', 0.1, 2)() * Math.PI * dt;
   },
-  0,
+  Math.PI,
   stream.combine<number, number>(dt => (vector()[0] !== 0 ? dt() : undefined), [
     dt,
   ])
